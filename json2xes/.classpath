@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/commons-beanutils-1.8.0.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/commons-collections-3.1.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/commons-lang-2.5.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/ezmorph-1.0.6.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/jackson-all-1.7.6.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/json-lib-2.4-jdk15.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/mysql-connector-java-5.1.7-bin.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
