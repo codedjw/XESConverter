@@ -72,7 +72,7 @@ public class DBtoXes {
 		DBtoXes db2xes=new DBtoXes();
 		db2xes.isBPMN = false;
 		try {
-			document = db2xes.generate(document, " LIMIT 30");
+			document = db2xes.generate(document, " LIMIT 1000, 1000");
 //			document = db2xes.generate(document, "");
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
@@ -88,11 +88,11 @@ public class DBtoXes {
 		System.out.println("Generate Big");
 		Connection con = this.getCon();
 		Statement stmt = con.createStatement();
-		String query = "SELECT T1.GUAHAO_ID, T1.USER_ID, T1.ACTIVITY_TIME, T1.ACTIVITY FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= \'2014-06-01 00:00:00\' AND GH_TIMESTAMP <= \'2014-06-30 23:59:59\' ORDER BY GUAHAO_ID"+limit+") AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC";
+		String query = "SELECT T1.GUAHAO_ID, T1.USER_ID, T1.ACTIVITY_TIME, T1.ACTIVITY FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= \'2014-07-01 00:00:00\' AND GH_TIMESTAMP <= \'2014-07-31 23:59:59\' ORDER BY GUAHAO_ID"+limit+") AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC";
 		long beginTime=System.currentTimeMillis();   //获取开始时间  
 		ResultSet rs = stmt.executeQuery(query);
 		long finishTime=System.currentTimeMillis(); //获取结束时间  
-		System.out.println("Query 运行时间： "+(finishTime-beginTime)/1000+"s");
+		System.out.println(query+" 运行时间： "+(finishTime-beginTime)/1000+"s");
 		Map<String, List<HospitalEvent>> guahao_events = new HashMap<String, List<HospitalEvent>>();
 		int count = 0;
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -437,7 +437,7 @@ public  List<String> getRegs() throws ClassNotFoundException, InstantiationExcep
         XMLWriter xmlWriter2;
 		try {
 			xmlWriter2 = new XMLWriter(
-			        new FileOutputStream("/Users/dujiawei/Desktop/RenjiLogs/renji_2014_06_30.xes"), format);
+			        new FileOutputStream("/Users/dujiawei/Desktop/RenjiLogs/PM第二次作业数据XES/renji_2014_07_1000_1000.xes"), format);
 			xmlWriter2.write(document);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
