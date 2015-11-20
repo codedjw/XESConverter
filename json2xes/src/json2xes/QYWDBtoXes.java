@@ -62,8 +62,8 @@ public class QYWDBtoXes {
 			document = prepare(name);
 			db2xes.isBPMN = false;
 			try {
-//				document = db2xes.generate(document, " LIMIT 1000, 1000", hid);
-				document = db2xes.generate(document, "", hid);
+//				document = db2xes.generate(document, " LIMIT 1000, 1000", hid, hname);
+				document = db2xes.generate(document, "", hid, hname);
 			} catch (InstantiationException | IllegalAccessException
 					| ClassNotFoundException | SQLException e) {
 				// TODO Auto-generated catch block
@@ -80,8 +80,8 @@ public class QYWDBtoXes {
 			document = prepare(name);
 			db2xes.isBPMN = false;
 			try {
-//				document = db2xes.generate(document, " LIMIT 1000, 1000", hid);
-				document = db2xes.generate(document, "", hid);
+//				document = db2xes.generate(document, " LIMIT 1000, 1000", hid, hname);
+				document = db2xes.generate(document, "", hid, hname);
 			} catch (InstantiationException | IllegalAccessException
 					| ClassNotFoundException | SQLException e) {
 				// TODO Auto-generated catch block
@@ -93,7 +93,7 @@ public class QYWDBtoXes {
 		System.out.println("Whole 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");
 	}
 	
-	public Document generate(Document document, String limit, String hid) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public Document generate(Document document, String limit, String hid, String hname) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		System.out.println("Generate Big");
 		Connection con = this.getCon();
 		Statement stmt = con.createStatement();
@@ -166,7 +166,7 @@ public class QYWDBtoXes {
 		for (String ghid : guahao_events.keySet()) {
 			List<HospitalEvent> eves = guahao_events.get(ghid);
 			if (eves != null) {
-				document = addRegEvents(document, eves, ghid, "武汉市中心医院");
+				document = addRegEvents(document, eves, ghid, hname);
 			}
 		}
 		return document;
