@@ -26,70 +26,84 @@ public class QYWDBtoXes {
 	
 	public boolean isBPMN = false;
 	
-//	public static void mainSmall(String[] args) {
-//		// TODO Auto-generated method stub
-//		long startTime=System.currentTimeMillis();   //获取开始时间  
-//		Document document = DocumentHelper.createDocument();
-//		String name = "武汉市中心医院";
-//		document = prepare(name);
-//		List<String> guahaoids = new ArrayList<String>();
-//		QYWDBtoXes db2xes=new QYWDBtoXes();
-//		db2xes.isBPMN = false;
-//		try {
-//			guahaoids = db2xes.getRegs();
-//		} catch (ClassNotFoundException | InstantiationException
-//				| IllegalAccessException | SQLException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-//		int count = 0;
-//		for (String ghid : guahaoids) {
-//			System.out.println(++count);
-//			List<HospitalEvent> events = new ArrayList<HospitalEvent>();
-//			try {
-//				events = db2xes.getEvents(ghid);
-//			} catch (ClassNotFoundException | InstantiationException
-//					| IllegalAccessException | SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			document = addRegEvents(document, events, ghid, "武汉市中心医院");
-////			for (HospitalEvent event : events) {
-////				System.out.println(event);
-////			}
-//		}
-//		output(document);
-//		long endTime=System.currentTimeMillis(); //获取结束时间  
-//		System.out.println(" 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");
-//	}
+	public Map<String, Integer> hospitalMaps = new HashMap<String, Integer>() {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		{
+			put("武汉市中心医院", 270001);
+			put("十堰市太和医院", 7190002);
+			put("十堰市人民医院", 7190001);
+			put("洛阳市妇女儿童医疗保健中心", 3790008);
+			put("济宁医学院附属医院", 1002);
+			put("吉林省人民医院", 4310001);
+			put("徐州市中心医院", 5160004);
+			put("安徽省中医院", 5510002);
+			put("洛阳市第一中医院", 3790010);
+			put("昆明呈贡医院", 8710004);
+		}
+	};
+	
+	public boolean isDaoyi = false;
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		long startTime=System.currentTimeMillis();   //获取开始时间  
 		Document document = DocumentHelper.createDocument();
-		String name = "武汉市中心医院";
-		document = prepare(name);
 		QYWDBtoXes db2xes=new QYWDBtoXes();
-		db2xes.isBPMN = false;
-		try {
-//			document = db2xes.generate(document, " LIMIT 1000, 1000");
-			document = db2xes.generate(document, "");
-		} catch (InstantiationException | IllegalAccessException
-				| ClassNotFoundException | SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		db2xes.isDaoyi = true;
+		for (String hname : db2xes.hospitalMaps.keySet()) {
+			String hid = ""+db2xes.hospitalMaps.get(hname);
+			String name = hname+"_导医用户";
+			System.out.println(name);
+			String filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_daoyi.xes";
+			document = prepare(name);
+			db2xes.isBPMN = false;
+			try {
+//				document = db2xes.generate(document, " LIMIT 1000, 1000", hid);
+				document = db2xes.generate(document, "", hid);
+			} catch (InstantiationException | IllegalAccessException
+					| ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			output(document, filename);
 		}
-		output(document);
+		db2xes.isDaoyi = false;
+		for (String hname : db2xes.hospitalMaps.keySet()) {
+			String hid = ""+db2xes.hospitalMaps.get(hname);
+			String name = hname+"_自发用户";
+			System.out.println(name);
+			String filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_regular.xes";
+			document = prepare(name);
+			db2xes.isBPMN = false;
+			try {
+//				document = db2xes.generate(document, " LIMIT 1000, 1000", hid);
+				document = db2xes.generate(document, "", hid);
+			} catch (InstantiationException | IllegalAccessException
+					| ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			output(document, filename);
+		}
 		long endTime=System.currentTimeMillis(); //获取结束时间  
 		System.out.println("Whole 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");
 	}
 	
-	public Document generate(Document document, String limit) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public Document generate(Document document, String limit, String hid) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		System.out.println("Generate Big");
 		Connection con = this.getCon();
 		Statement stmt = con.createStatement();
 //		String query = "SELECT T1.GUAHAO_ID, T1.USER_ID, T1.ACTIVITY_TIME, T1.ACTIVITY FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= \'2014-04-01 00:00:00\' AND GH_TIMESTAMP <= \'2014-04-30 23:59:59\' ORDER BY GUAHAO_ID"+limit+") AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC";
-		String query = "SELECT CASE_ID, USER_ID, VISIT_TIME, VISIT_MEAN FROM qyw.daoyi_events_20151111_06 WHERE HOSPITAL_ID = \'270001\' ORDER BY CASE_ID, VISIT_TIME ASC";
+		String query = "";
+		if (this.isDaoyi) {
+			query = "SELECT CASE_ID, USER_ID, VISIT_TIME, VISIT_MEAN FROM qyw.daoyi_events_20151111_06 WHERE HOSPITAL_ID = "+hid+" AND TRIGGER_TYPE = \'用户点击\' ORDER BY CASE_ID, VISIT_TIME ASC";
+		} else {
+			query = "SELECT CASE_ID, USER_ID, VISIT_TIME, VISIT_MEAN FROM qyw.regular_events_20151111_06 WHERE HOSPITAL_ID = "+hid+" AND TRIGGER_TYPE = \'用户点击\' AND USER_ID > 0 ORDER BY CASE_ID, VISIT_TIME ASC";
+		}
 		long beginTime=System.currentTimeMillis();   //获取开始时间  
 		ResultSet rs = stmt.executeQuery(query);
 		long finishTime=System.currentTimeMillis(); //获取结束时间  
@@ -158,55 +172,6 @@ public class QYWDBtoXes {
 		return document;
 	}
 	
-//	public static void main(String[] args) {
-//		// TODO Auto-generated method stub
-//		//String s="/Users/tiffany/develop/TestWorkspace/json2xes/jsonfiles/json挂号就诊5月上.json";
-//		
-//		System.out.println("ok1");
-//		Document document = DocumentHelper.createDocument();
-//		String name="医院流程";
-//		document=prepare(name);
-//		DBtoXes db2xes=new DBtoXes();
-//		 List<String> regids=new LinkedList<String> ();
-//		 try {
-//			regids=db2xes.getRegs();
-//		} catch (ClassNotFoundException | InstantiationException
-//				| IllegalAccessException | SQLException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-//		for(String id:regids){
-//			System.out.println("regid:"+id);
-//			List<HospitalEvent> elist=new LinkedList <HospitalEvent> ();
-//			
-//			try {
-//				elist= db2xes.getEvents(id);
-//			} catch (ClassNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (InstantiationException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (IllegalAccessException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			document=addRegEvents(document,elist,id,"医院流程");
-////			for (HospitalEvent eve : elist){
-////				eve.print();
-////			}
-//		}
-//
-//		//
-//		output(document);
-//		
-//       
-//		
-//		
-//	}
 	
 	public Connection getCon() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
 //		System.out.println("ok1");
@@ -217,83 +182,6 @@ public class QYWDBtoXes {
 		Connection con = DriverManager.getConnection(url, "root", "");
 		return con;
 	}
-	
-	
-	public  List<String> getRegs() throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException{
-		
-		Connection con =getCon();
-		Statement stmt = con.createStatement();
-		
-//		String query="select * from regcount where count > 5 order by rand() limit 300";
-		//String query="select * from regcount WHERE regid >= ((SELECT MAX(regid) FROM regcount)-(SELECT      MIN(regid) FROM regcount)) * RAND() + (SELECT MIN(regid) FROM regcount)  limit 1000";
-		//String query = "select * from regcount order by eventcount desc";
-		String query = "SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= \'2014-05-01 00:00:00\' AND GH_TIMESTAMP <= \'2014-05-31 23:59:59\' ORDER BY GUAHAO_ID ASC";
-//		long startTime=System.currentTimeMillis();   //获取开始时间  
-		ResultSet rs=stmt.executeQuery(query);
-//		long endTime=System.currentTimeMillis(); //获取结束时间  
-//		System.out.println(query+" 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");  
-//		System.out.println("okdb");
-//		System.out.println( " ok");
-		//结果集ResultSet
-		List<String> list=new LinkedList<String>();
-		while(rs.next())
-		{
-			list.add(rs.getString("GUAHAO_ID"));
-		}
-		con.close();
-		return list;
-
-	}
-
-
-	
-	
-	public  List<HospitalEvent> getEvents(String regid) throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException{
-		
-		Connection con =getCon();
-		Statement stmt = con.createStatement();
-//		String query = "select * from events2 where regid='"+regid+"' order by date, name";
-		String query = "SELECT * FROM renji.eventlog WHERE GUAHAO_ID="+"\'"+regid+"\' ORDER BY ACTIVITY_TIME ASC";
-//		long startTime=System.currentTimeMillis();   //获取开始时间  
-//		System.out.println("query:");
-//		System.out.println(query);
-		ResultSet rs=stmt.executeQuery(query);
-//		long endTime=System.currentTimeMillis(); //获取结束时间  
-//		System.out.println(query+" 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");  
-//		System.out.println("okdb");
-//		System.out.println(regid +" ok");
-		//结果集ResultSet
-		List<HospitalEvent> list=new LinkedList<HospitalEvent>();
-		int count=0;
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String startTime = null;
-		String endTime = null;
-		while(rs.next())
-		{
-			String activity_time = sdf.format(rs.getTimestamp("ACTIVITY_TIME"));
-			if (this.isBPMN) {
-				startTime = (startTime == null || startTime.compareTo(activity_time) > 0) ? activity_time : startTime;
-				endTime = (endTime == null || endTime.compareTo(activity_time) < 0) ? activity_time : endTime;
-			}
-			String activity = rs.getNString("ACTIVITY");
-			list.add(new HospitalEvent(activity, activity_time, rs.getString("USER_ID"), rs.getString("GUAHAO_ID")));
-			//a=rs.getString("检验.挂号序号");
-			count ++;
-		}
-		if (this.isBPMN) {
-			list.add(0, new HospitalEvent("Start", startTime, "__NULL__", regid));
-			list.add(new HospitalEvent("End", endTime, "__NULL__", regid));
-		}
-		System.out.println("Case "+regid+": "+count+"个event");
-		con.close();
-		return list;
-		
-
-	}
-
-
-	
-	
 	
 	static Document addRegEvents(Document document,List<HospitalEvent> list, String regid,String name){
 //		System.out.println("ok addRegEvents");
@@ -412,37 +300,14 @@ public class QYWDBtoXes {
 	        strLifecycleModel.addAttribute("value", "standard");
 	        
 	    	return document;
-	  
-
-	        
-//	       
-	//
-//	        int i = 0;  
-//	        for (Registration o : list) {  
-//	            Element nodeElement = nodesElement.addElement("node");  
-//	            if (o instanceof Map) {  
-//	                for (Object obj : ((Map) o).keySet()) {  
-//	                    Element keyElement = nodeElement.addElement("key");  
-//	                    keyElement.addAttribute("label", String.valueOf(obj));  
-//	                    keyElement.setText(String.valueOf(((Map) o).get(obj)));  
-//	                }  
-//	            } else {  
-//	                Element keyElement = nodeElement.addElement("key");  
-//	                keyElement.addAttribute("label", String.valueOf(i));  
-//	                keyElement.setText(String.valueOf(o));  
-//	            }  
-//	            i++;  
-//	        }  
-	       // return doc2String(document);  
-
 	}
 	
-	static void output(Document document){
+	static void output(Document document, String filename){
         OutputFormat format = new OutputFormat("    ", true);// 设置缩进为4个空格，并且另起一行为true
         XMLWriter xmlWriter2;
 		try {
 			xmlWriter2 = new XMLWriter(
-			        new FileOutputStream("/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_270001.xes"), format);
+			        new FileOutputStream(filename), format);
 			xmlWriter2.write(document);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
