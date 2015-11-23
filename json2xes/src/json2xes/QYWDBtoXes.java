@@ -48,17 +48,25 @@ public class QYWDBtoXes {
 	
 	public boolean isDaoyi = false;
 	
+	public boolean isDistinct = false;
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		long startTime=System.currentTimeMillis();   //获取开始时间  
 		Document document = DocumentHelper.createDocument();
 		QYWDBtoXes db2xes=new QYWDBtoXes();
+		db2xes.isDistinct = true;
 		db2xes.isDaoyi = true;
 		for (String hname : db2xes.hospitalMaps.keySet()) {
 			String hid = ""+db2xes.hospitalMaps.get(hname);
 			String name = hname+"_导医用户";
 			System.out.println(name);
-			String filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_daoyi.xes";
+			String filename = "";
+			if (db2xes.isDistinct) {
+				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_daoyi.xes";
+			} else {
+				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_daoyi.xes";
+			}
 			document = prepare(name);
 			db2xes.isBPMN = false;
 			try {
@@ -76,7 +84,12 @@ public class QYWDBtoXes {
 			String hid = ""+db2xes.hospitalMaps.get(hname);
 			String name = hname+"_自发用户";
 			System.out.println(name);
-			String filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_regular.xes";
+			String filename = "";
+			if (db2xes.isDistinct) {
+				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_regular.xes";
+			} else {
+				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_regular.xes";
+			}
 			document = prepare(name);
 			db2xes.isBPMN = false;
 			try {
@@ -99,10 +112,14 @@ public class QYWDBtoXes {
 		Statement stmt = con.createStatement();
 //		String query = "SELECT T1.GUAHAO_ID, T1.USER_ID, T1.ACTIVITY_TIME, T1.ACTIVITY FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= \'2014-04-01 00:00:00\' AND GH_TIMESTAMP <= \'2014-04-30 23:59:59\' ORDER BY GUAHAO_ID"+limit+") AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC";
 		String query = "";
+		String is_dis = "";
+		if (this.isDistinct) {
+			is_dis = "DISTINCT";
+		}
 		if (this.isDaoyi) {
-			query = "SELECT CASE_ID, USER_ID, VISIT_TIME, VISIT_MEAN FROM qyw.daoyi_events_20151111_06 WHERE HOSPITAL_ID = "+hid+" AND TRIGGER_TYPE = \'用户点击\' ORDER BY CASE_ID, VISIT_TIME ASC";
+			query = "SELECT "+is_dis+" CASE_ID, USER_ID, VISIT_TIME, VISIT_MEAN FROM qyw.daoyi_events_20151111_06 WHERE HOSPITAL_ID = "+hid+" AND TRIGGER_TYPE = \'用户点击\' ORDER BY CASE_ID, VISIT_TIME ASC";
 		} else {
-			query = "SELECT CASE_ID, USER_ID, VISIT_TIME, VISIT_MEAN FROM qyw.regular_events_20151111_06 WHERE HOSPITAL_ID = "+hid+" AND TRIGGER_TYPE = \'用户点击\' AND USER_ID > 0 ORDER BY CASE_ID, VISIT_TIME ASC";
+			query = "SELECT "+is_dis+" CASE_ID, USER_ID, VISIT_TIME, VISIT_MEAN FROM qyw.regular_events_20151111_06 WHERE HOSPITAL_ID = "+hid+" AND TRIGGER_TYPE = \'用户点击\' AND USER_ID > 0 ORDER BY CASE_ID, VISIT_TIME ASC";
 		}
 		long beginTime=System.currentTimeMillis();   //获取开始时间  
 		ResultSet rs = stmt.executeQuery(query);
