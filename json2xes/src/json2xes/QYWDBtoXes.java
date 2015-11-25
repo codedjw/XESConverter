@@ -1,8 +1,10 @@
 package json2xes;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -57,16 +59,36 @@ public class QYWDBtoXes {
 		QYWDBtoXes db2xes=new QYWDBtoXes();
 		db2xes.isDistinct = true;
 		db2xes.isDaoyi = true;
+		PrintStream sysout = System.out;
+		PrintStream printStream = null;
 		for (String hname : db2xes.hospitalMaps.keySet()) {
 			String hid = ""+db2xes.hospitalMaps.get(hname);
 			String name = hname+"_导医用户";
-			System.out.println(name);
 			String filename = "";
 			if (db2xes.isDistinct) {
 				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_daoyi.xes";
 			} else {
 				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_daoyi.xes";
 			}
+			// redirect console output
+			String logname = "";
+			if (db2xes.isDistinct) {
+				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_daoyi.log";
+			} else {
+				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_daoyi.log";
+			}
+			File logfile=new File(logname);          
+			try {
+				logfile.createNewFile();
+				FileOutputStream fileOutputStream = new FileOutputStream(logfile);
+				printStream = new PrintStream(fileOutputStream);
+				System.setOut(printStream); 
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			// --- END ---
+			System.out.println(name);
 			document = prepare(name);
 			db2xes.isBPMN = false;
 			try {
@@ -78,18 +100,40 @@ public class QYWDBtoXes {
 				e.printStackTrace();
 			}
 			output(document, filename);
+			if (printStream != null) {
+				printStream.close();
+			}
 		}
 		db2xes.isDaoyi = false;
 		for (String hname : db2xes.hospitalMaps.keySet()) {
 			String hid = ""+db2xes.hospitalMaps.get(hname);
 			String name = hname+"_自发用户";
-			System.out.println(name);
 			String filename = "";
 			if (db2xes.isDistinct) {
 				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_regular.xes";
 			} else {
 				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_regular.xes";
 			}
+			// redirect console output
+			String logname = "";
+			if (db2xes.isDistinct) {
+				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_regular.log";
+			} else {
+				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_regular.log";
+			}
+			File logfile = new File(logname);
+			try {
+				logfile.createNewFile();
+				FileOutputStream fileOutputStream = new FileOutputStream(
+						logfile);
+				printStream = new PrintStream(fileOutputStream);
+				System.setOut(printStream);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			// --- END ---
+			System.out.println(name);
 			document = prepare(name);
 			db2xes.isBPMN = false;
 			try {
@@ -101,8 +145,12 @@ public class QYWDBtoXes {
 				e.printStackTrace();
 			}
 			output(document, filename);
+			if (printStream != null) {
+				printStream.close();
+			}
 		}
-		long endTime=System.currentTimeMillis(); //获取结束时间  
+		long endTime=System.currentTimeMillis(); //获取结束时间
+		System.setOut(sysout);
 		System.out.println("Whole 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");
 	}
 	
