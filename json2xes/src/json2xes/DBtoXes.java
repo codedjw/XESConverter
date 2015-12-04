@@ -314,7 +314,7 @@ public  List<String> getRegs() throws ClassNotFoundException, InstantiationExcep
 				eleReg1.addAttribute("value", eve.getName());
 				Element eleReg2=eventReg.addElement("date");
 				eleReg2.addAttribute("key", "time:timestamp");
-				eleReg2.addAttribute("value", eve.getDate());
+				eleReg2.addAttribute("value", eve.getDate()+"+08:00");
 				Element eleReg3=eventReg.addElement("string");
 				eleReg3.addAttribute("key", "org:resource");
 				eleReg3.addAttribute("value", eve.getResource());
@@ -437,7 +437,7 @@ public  List<String> getRegs() throws ClassNotFoundException, InstantiationExcep
         XMLWriter xmlWriter2;
 		try {
 			xmlWriter2 = new XMLWriter(
-			        new FileOutputStream("/Users/dujiawei/Desktop/RenjiLogs/renji_2014_04_all.xes"), format);
+			        new FileOutputStream("/Users/dujiawei/Desktop/流程挖掘案例/RenjiLogs/renji_2014_04_all.xes"), format);
 			xmlWriter2.write(document);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block

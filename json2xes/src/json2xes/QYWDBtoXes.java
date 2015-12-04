@@ -52,6 +52,8 @@ public class QYWDBtoXes {
 	
 	public boolean isDistinct = false;
 	
+	public boolean considerImpAct = false;
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		long startTime=System.currentTimeMillis();   //获取开始时间  
@@ -59,24 +61,27 @@ public class QYWDBtoXes {
 		QYWDBtoXes db2xes=new QYWDBtoXes();
 		db2xes.isDistinct = true;
 		db2xes.isDaoyi = true;
+		db2xes.considerImpAct = false;
 		PrintStream sysout = System.out;
 		PrintStream printStream = null;
 		for (String hname : db2xes.hospitalMaps.keySet()) {
 			String hid = ""+db2xes.hospitalMaps.get(hname);
 			String name = hname+"_导医用户";
-			String filename = "";
+			String filename = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第二阶段/XES";
 			if (db2xes.isDistinct) {
-				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_daoyi.xes";
-			} else {
-				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_daoyi.xes";
+				filename += "_Distinct";
+			} if (db2xes.considerImpAct){
+				filename += "_Imp";
 			}
+			filename += ("/qyw_"+hid+"_daoyi.xes");
 			// redirect console output
-			String logname = "";
+			String logname = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第二阶段/XES";
 			if (db2xes.isDistinct) {
-				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_daoyi.log";
-			} else {
-				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_daoyi.log";
+				logname += "_Distinct";
+			} if (db2xes.considerImpAct){
+				logname += "_Imp";
 			}
+			logname += ("/qyw_"+hid+"_daoyi.log");
 			File logfile=new File(logname);          
 			try {
 				logfile.createNewFile();
@@ -108,19 +113,21 @@ public class QYWDBtoXes {
 		for (String hname : db2xes.hospitalMaps.keySet()) {
 			String hid = ""+db2xes.hospitalMaps.get(hname);
 			String name = hname+"_自发用户";
-			String filename = "";
+			String filename = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第二阶段/XES";
 			if (db2xes.isDistinct) {
-				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_regular.xes";
-			} else {
-				filename = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_regular.xes";
+				filename += "_Distinct";
+			} if (db2xes.considerImpAct){
+				filename += "_Imp";
 			}
+			filename += ("/qyw_"+hid+"_regular.xes");
 			// redirect console output
-			String logname = "";
+			String logname = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第二阶段/XES";
 			if (db2xes.isDistinct) {
-				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES_Distinct/qyw_"+hid+"_regular.log";
-			} else {
-				logname = "/Users/dujiawei/Desktop/趣医网-第二阶段/XES/qyw_"+hid+"_regular.log";
+				logname += "_Distinct";
+			} if (db2xes.considerImpAct){
+				logname += "_Imp";
 			}
+			logname += ("/qyw_"+hid+"_regular.log");
 			File logfile = new File(logname);
 			try {
 				logfile.createNewFile();
@@ -230,7 +237,17 @@ public class QYWDBtoXes {
 		con.close();
 		for (String ghid : guahao_events.keySet()) {
 			List<HospitalEvent> eves = guahao_events.get(ghid);
-			if (eves != null) {
+			boolean isContained = true;
+			if (this.considerImpAct) {
+				for (HospitalEvent e : eves) {
+					if (e.getName().equals("成功提交预约（不缴费）") || e.getName().equals("成功提交预约（缴费）") || e.getName().equals("成功提交挂号")) {
+						isContained = true;
+					} else {
+						isContained = false;
+					}
+				}
+			}
+			if (eves != null && isContained) {
 				document = addRegEvents(document, eves, ghid, hname);
 			}
 		}
@@ -272,7 +289,7 @@ public class QYWDBtoXes {
 				eleReg1.addAttribute("value", eve.getName());
 				Element eleReg2=eventReg.addElement("date");
 				eleReg2.addAttribute("key", "time:timestamp");
-				eleReg2.addAttribute("value", eve.getDate());
+				eleReg2.addAttribute("value", eve.getDate()+"+08:00");
 				Element eleReg3=eventReg.addElement("string");
 				eleReg3.addAttribute("key", "org:resource");
 				eleReg3.addAttribute("value", eve.getResource());
