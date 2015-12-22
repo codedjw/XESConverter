@@ -27,6 +27,8 @@ public class DB2Xes {
 	
 	public boolean isDistinct = false;
 	
+	public String DB_NAME = "";
+	
 	public String TB_NAME = "";
 	
 	public String CASE_ID = "CASE_ID";
@@ -46,13 +48,15 @@ public class DB2Xes {
 	public DB2Xes() {
 		
 	}
-
-	public DB2Xes(boolean isBPMN, boolean isDistinct, String tB_NAME,
-			String cASE_ID, String uSER_RESOURCE, String tIMESTAMP,
-			String aCTIVITY, String filename, String xesname, String eventprefix) {
+	
+	public DB2Xes(boolean isBPMN, boolean isDistinct, String dB_NAME,
+			String tB_NAME, String cASE_ID, String uSER_RESOURCE,
+			String tIMESTAMP, String aCTIVITY, String filename, String xesname,
+			String eventprefix) {
 		super();
 		this.isBPMN = isBPMN;
 		this.isDistinct = isDistinct;
+		DB_NAME = dB_NAME;
 		TB_NAME = tB_NAME;
 		CASE_ID = cASE_ID;
 		USER_RESOURCE = uSER_RESOURCE;
@@ -77,12 +81,12 @@ public class DB2Xes {
 		this.output(document);
 	}
 	
-	private Connection getCon() throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
+	private Connection getCon(String dbname) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
 //		System.out.println("ok1");
 		Class.forName("com.mysql.jdbc.Driver");
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
 //		String url="jdbc:mysql://localhost:3306/cop?user=root&password=110211";
-		String url="jdbc:mysql://localhost:3306/qyw";
+		String url="jdbc:mysql://localhost:3306/"+dbname;
 		Connection con = DriverManager.getConnection(url, "root", "");
 		return con;
 	}
@@ -166,7 +170,7 @@ public class DB2Xes {
 
 	public Document generate(Document document, String eventprefix) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		System.out.println("Generate Big");
-		Connection con = this.getCon();
+		Connection con = this.getCon(this.DB_NAME);
 		Statement stmt = con.createStatement();
 		String query = "";
 		String is_dis = "";

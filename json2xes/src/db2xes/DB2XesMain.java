@@ -32,8 +32,9 @@ public class DB2XesMain {
 			}
 		};
 		String filepath = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第三阶段/XES";
-		String filename = filepath + "/all.xes"; // 医院名_daoyi.xes or 医院名_regular.xes
-		String logname =filepath + "/all.log"; // 医院名_daoyi.log or 医院名_regular.log
+		String descname = "IMEI_ID_866102022218694";
+		String filename = filepath + "/" + descname + ".xes"; // 医院名_daoyi.xes or 医院名_regular.xes
+		String logname = filepath + "/" + descname + ".log"; // 医院名_daoyi.log or 医院名_regular.log
 		String xesname = "典型案例";  // 医院名_导医用户 or 医院名_自发用户
 		String eventprefix = "典型案例";  // 医院名
 		PrintStream sysout = System.out;
@@ -52,7 +53,7 @@ public class DB2XesMain {
 		}
 		// --- END ---
 		
-		DB2Xes db2xes = new DB2Xes(false, true, "qyw.daoyi_events_20151111_06", "CASE_ID", "USER_ID", "VISIT_TIME", "VISIT_MEAN", filename, xesname, eventprefix);
+		DB2Xes db2xes = new DB2Xes(false, true, "db2xes", "db2xes.events", "CASE_ID", "USER_ID", "VISIT_TIME", "VISIT_MEAN", filename, xesname, eventprefix);
 		db2xes.db2xes();
 		
 		long endTime=System.currentTimeMillis(); //获取结束时间
