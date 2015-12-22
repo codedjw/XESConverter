@@ -53,7 +53,7 @@ public class DB2XesMain {
 		}
 		// --- END ---
 		
-		DB2Xes db2xes = new DB2Xes(false, true, "db2xes", "db2xes.events", "CASE_ID", "USER_ID", "VISIT_TIME", "VISIT_MEAN", filename, xesname, eventprefix);
+		DB2Xes db2xes = new DB2Xes(false, true, "db2xes", "db2xes.xesevents", "CASE_ID", "USER_ID", "VISIT_TIME", "VISIT_MEAN", filename, xesname, eventprefix);
 		db2xes.db2xes();
 		
 		long endTime=System.currentTimeMillis(); //获取结束时间
