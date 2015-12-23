@@ -81,7 +81,7 @@ public class DB2Xes {
 		this.output(document);
 	}
 	
-	private Connection getCon(String dbname) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
+	public static Connection getCon(String dbname) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
 //		System.out.println("ok1");
 		Class.forName("com.mysql.jdbc.Driver");
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -170,7 +170,7 @@ public class DB2Xes {
 
 	public Document generate(Document document, String eventprefix) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		System.out.println("Generate Big");
-		Connection con = this.getCon(this.DB_NAME);
+		Connection con = DB2Xes.getCon(this.DB_NAME);
 		Statement stmt = con.createStatement();
 		String query = "";
 		String is_dis = "";
