@@ -8,8 +8,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class DB2XesMain {
 
@@ -22,9 +26,12 @@ public class DB2XesMain {
 		try {
 //			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "866102022218694");
 //			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "867620026805215");
-//			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", true);
-//			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", false);
-			DB2XesMain.genXES_AllModule(filepath+"/modules");
+//			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", true, false);
+//			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", false, false);
+//			DB2XesMain.genXES_AllModule(filepath+"/modules");
+//			DB2XesMain.genXES_AllBusinessModule(filepath+"/bus_modules");
+			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", true, true);
+			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", false, true);
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
@@ -46,7 +53,7 @@ public class DB2XesMain {
 		Statement stmt0 = con.createStatement();
 		long beginTime = System.currentTimeMillis(); // 获取开始时间
 		stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
-		String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\')) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE IMEI_ID = \'"
+		String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN, IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE IMEI_ID = \'"
 				+ IMEI_ID + "\' AND USER_ID > 0 ORDER BY VISIT_TIME";
 		stmt.executeUpdate(query);
 		long finishTime = System.currentTimeMillis(); // 获取结束时间
@@ -60,7 +67,7 @@ public class DB2XesMain {
 	}
 	
 	// 生成各医院的XES （isDaoyi = true表示导医用户，否则表示一般用户）
-	public static void genXES_AllHospital(String filepath, boolean isDaoyi) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void genXES_AllHospital(String filepath, boolean isDaoyi, boolean considerModule) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		Map<String, Integer> hospitalMaps = new HashMap<String, Integer>() {
 			/**
 			 * 初始化十佳医院列表
@@ -80,41 +87,94 @@ public class DB2XesMain {
 				put("昆明呈贡医院", 8710004);
 			}
 		};
-		for (String hname : hospitalMaps.keySet()) {
-			Integer hid = hospitalMaps.get(hname);
-			String desc_suffix = ""; String xes_suffix = ""; String daoyi_query = "";
-			if (isDaoyi) {
-				desc_suffix = "daoyi";
-				xes_suffix = "导医用户";
-				daoyi_query = "NOT ";
-			} else {
-				desc_suffix = "regular";
-				xes_suffix = "自发用户";
+		Map<String, List<String>> businessModule = new HashMap<String, List<String>>() {
+			/**
+			 * 业务模块<->VISIT_OP_CAT对应表
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{
+				put("预约挂号", new ArrayList<String>() {
+					/**
+					 * 预约挂号
+					 */
+					private static final long serialVersionUID = 1L;
+
+				{
+				    add("/APP/appoint");
+				    add("/APP/area");
+				    add("/APP/center");
+				    add("/APP/hospitalInform");
+				    add("/APP/medicalGuideWindow");
+				    add("/APP/multibusiness");
+				    add("/APP/patientwords");
+				    add("/APP/register");
+				    add("/APP/satisfaction");
+				}});
+//				put("地理信息", new ArrayList<String>() {
+//					/**
+//					 * 预约挂号
+//					 */
+//					private static final long serialVersionUID = 1L;
+//
+//				{
+//				    add("/APP/area");
+//				}});
 			}
-			String descname = "qyw_" + hid + "_" + desc_suffix;
-			String xesname = hname + "_" + xes_suffix;
-			String eventprefix = hname;
+		};
+		Iterator<Entry<String, List<String>>> iter = businessModule.entrySet().iterator();
+		do {
+			String module = "";
+			String module_str = "";
+			if (considerModule) {
+				Map.Entry<String, List<String>> entry = (Map.Entry<String, List<String>>) iter.next();
+				module = "_"+entry.getKey();
+				List<String> visit_op_cats = entry.getValue();
+				String visit_op_cats_str = "";
+				for (String visit_op_cat : visit_op_cats) {
+					visit_op_cats_str += ("\'"+visit_op_cat+"\',");
+				}
+				visit_op_cats_str = visit_op_cats_str.substring(0, visit_op_cats_str.length()-1);
+				module_str = " AND SUBSTRING_INDEX(VISIT_OP,\'/\', 3) IN ("+visit_op_cats_str+")";
+			}
+			for (String hname : hospitalMaps.keySet()) {
+				Integer hid = hospitalMaps.get(hname);
+				String desc_suffix = ""; String xes_suffix = ""; String daoyi_query = "";
+				if (isDaoyi) {
+					desc_suffix = "daoyi";
+					xes_suffix = "导医用户";
+					daoyi_query = "NOT ";
+				} else {
+					desc_suffix = "regular";
+					xes_suffix = "自发用户";
+				}
+				String descname = "qyw_" + hid + "_" + desc_suffix + module;
+				String xesname = hname + "_" + xes_suffix + module;
+				String eventprefix = hname;
 
-			// prepare (produce data to db2xes.xesevents)
-			Connection con = DB2Xes.getCon("qyw");
-			Statement stmt = con.createStatement();
-			Statement stmt0 = con.createStatement();
-			long beginTime = System.currentTimeMillis(); // 获取开始时间
-			stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
-			String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, t1.USER_ID, VISIT_MEAN FROM (SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\')) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE HOSPITAL_ID = \'"
-					+ hid
-					+ "\' AND USER_ID > 0 ORDER BY USER_ID) AS t1 LEFT JOIN (SELECT user_id AS DAOYI_ID FROM qyw.daoyi_users_20151207_07 ORDER BY DAOYI_ID) AS t2 ON t1.USER_ID = t2.DAOYI_ID WHERE t2.DAOYI_ID IS "
-					+ daoyi_query + "NULL ORDER BY VISIT_TIME";
-			stmt.executeUpdate(query);
-			long finishTime = System.currentTimeMillis(); // 获取结束时间
-			System.out.println(query + " 运行时间： " + (finishTime - beginTime)
-					/ 1000 / 60 + "min, " + (finishTime - beginTime)
-					% (1000 * 60) / 1000 + "s, " + (finishTime - beginTime)
-					% (1000 * 60) % 1000 + "ms");
+				// prepare (produce data to db2xes.xesevents)
+				Connection con = DB2Xes.getCon("qyw");
+				Statement stmt = con.createStatement();
+				Statement stmt0 = con.createStatement();
+				long beginTime = System.currentTimeMillis(); // 获取开始时间
+				stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
+				String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, t1.USER_ID, VISIT_MEAN FROM (SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE HOSPITAL_ID = \'"
+						+ hid
+						+ "\' AND USER_ID > 0"
+						+ module_str
+						+" ORDER BY USER_ID) AS t1 LEFT JOIN (SELECT user_id AS DAOYI_ID FROM qyw.daoyi_users_20151207_07 ORDER BY DAOYI_ID) AS t2 ON t1.USER_ID = t2.DAOYI_ID WHERE t2.DAOYI_ID IS "
+						+ daoyi_query + "NULL ORDER BY VISIT_TIME";
+				stmt.executeUpdate(query);
+				long finishTime = System.currentTimeMillis(); // 获取结束时间
+				System.out.println(query + " 运行时间： " + (finishTime - beginTime)
+						/ 1000 / 60 + "min, " + (finishTime - beginTime)
+						% (1000 * 60) / 1000 + "s, " + (finishTime - beginTime)
+						% (1000 * 60) % 1000 + "ms");
 
-			// generate
-			DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
-		}
+				// generate
+				DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
+			}
+		} while (considerModule && iter.hasNext());
 	}
 	
 	// 生成各VISIT_OP_CAT对应的XES（按模块分析）-> VISIT_OP_CAT = SUBSTRING_INDEX(VISIT_OP,'/', 3)
@@ -136,9 +196,70 @@ public class DB2XesMain {
 			Statement stmt1 = con.createStatement();
 			long beginTime = System.currentTimeMillis(); // 获取开始时间
 			stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
-			String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\')) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE USER_ID > 0 AND SUBSTRING_INDEX(VISIT_OP,\'/\', 3) = \'"
+			String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE USER_ID > 0 AND SUBSTRING_INDEX(VISIT_OP,\'/\', 3) = \'"
 					+ visit_op_cat + "\' ORDER BY VISIT_TIME";
 			stmt1.executeUpdate(query);
+			long finishTime = System.currentTimeMillis(); // 获取结束时间
+			System.out.println(query + " 运行时间： " + (finishTime - beginTime)
+					/ 1000 / 60 + "min, " + (finishTime - beginTime)
+					% (1000 * 60) / 1000 + "s, " + (finishTime - beginTime)
+					% (1000 * 60) % 1000 + "ms");
+
+			// generate
+			DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
+		}
+	}
+	
+	// not recommend (too large, not general, so many noise)
+	// 生成业务模块对应的XES（按模块分析）-> filter in VISIT_CAT，然后查找VISIT_OP_CAT = SUBSTRING_INDEX(VISIT_OP,'/', 3)
+	public static void genXES_AllBusinessModule(String filepath) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		Map<String, List<String>> businessModule = new HashMap<String, List<String>>() {
+			/**
+			 * 业务模块<->VISIT_OP_CAT对应表
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{
+				put("预约挂号", new ArrayList<String>() {
+					/**
+					 * 预约挂号
+					 */
+					private static final long serialVersionUID = 1L;
+
+				{
+				    add("/APP/appoint");
+				    add("/APP/area");
+				    add("/APP/center");
+				    add("/APP/hospitalInform");
+				    add("/APP/medicalGuideWindow");
+				    add("/APP/multibusiness");
+				    add("/APP/patientwords");
+				    add("/APP/register");
+				    add("/APP/satisfaction");
+				}});
+			}
+		};
+		
+		for (String module : businessModule.keySet()) {
+			List<String> visit_op_cats = businessModule.get(module);
+			String visit_op_cats_str = "";
+			for (String visit_op_cat : visit_op_cats) {
+				visit_op_cats_str += ("\'"+visit_op_cat+"\',");
+			}
+			visit_op_cats_str = visit_op_cats_str.substring(0, visit_op_cats_str.length()-1);
+			String descname = "qyw_" + module;
+			String xesname = module;
+			String eventprefix = module;
+
+			// prepare (produce data to db2xes.xesevents)
+			Connection con = DB2Xes.getCon("qyw");
+			Statement stmt = con.createStatement();
+			Statement stmt0 = con.createStatement();
+			long beginTime = System.currentTimeMillis(); // 获取开始时间
+			stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
+			String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE USER_ID > 0 AND SUBSTRING_INDEX(VISIT_OP,\'/\', 3) IN ("
+					+ visit_op_cats_str + ") ORDER BY VISIT_TIME";
+			stmt.executeUpdate(query);
 			long finishTime = System.currentTimeMillis(); // 获取结束时间
 			System.out.println(query + " 运行时间： " + (finishTime - beginTime)
 					/ 1000 / 60 + "min, " + (finishTime - beginTime)
