@@ -30,8 +30,9 @@ public class DB2XesMain {
 //			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", false, false);
 //			DB2XesMain.genXES_AllModule(filepath+"/modules");
 //			DB2XesMain.genXES_AllBusinessModule(filepath+"/bus_modules");
-			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", true, true);
-			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", false, true);
+//			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", true, true);
+//			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", false, true);
+			DB2XesMain.genXES_AllNotLoginUsers(filepath+"/not_login");
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
@@ -269,6 +270,28 @@ public class DB2XesMain {
 			// generate
 			DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
 		}
+	}
+	
+	public static void genXES_AllNotLoginUsers(String filepath) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		String descname = "qyw_" + "未登录用户";
+		String xesname = "未登录用户";
+		String eventprefix = "未登录用户";
+		
+		// prepare (produce data to db2xes.xesevents)
+		Connection con = DB2Xes.getCon("qyw");
+		Statement stmt = con.createStatement();
+		Statement stmt0 = con.createStatement();
+		long beginTime = System.currentTimeMillis(); // 获取开始时间
+		stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
+		String query = "INSERT INTO db2xes.xesevents SELECT CONCAT_WS(\'@\',IMEI_ID,DATE_FORMAT(VISIT_TIME,\'%Y-%m-%d\')) AS CASE_ID, VISIT_TIME, IMEI_ID AS USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM qyw.c_cus_events_20151207_07 WHERE USER_ID = -1 AND (IMEI_ID REGEXP \'^[0-9]{15}$\' OR IMEI_ID REGEXP \'^[0-9A-Z]{8}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{12}$\' OR IMEI_ID REGEXP \'^[0-9A-Fa-f]{14,15}$\') AND IMEI_ID NOT REGEXP \'^[0]{1,}$\' ORDER BY IMEI_ID, VISIT_TIME";
+		stmt.executeUpdate(query);
+		long finishTime = System.currentTimeMillis(); // 获取结束时间
+		System.out.println(query + " 运行时间： " + (finishTime - beginTime) / 1000
+				/ 60 + "min, " + (finishTime - beginTime) % (1000 * 60) / 1000
+				+ "s, " + (finishTime - beginTime) % (1000 * 60) % 1000 + "ms");
+
+		// generate
+		DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
 	}
 	
 	public static void generateXES(String filepath, String descname, String xesname, String eventprefix) {
