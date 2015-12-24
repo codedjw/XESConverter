@@ -190,11 +190,11 @@ public class QYWDBtoXes {
 		int idx = 0;
 		while (rs.next()) {
 //			String activity_time = sdf.format(rs.getTimestamp("ACTIVITY_TIME"));
-//			String activity = rs.getNString("ACTIVITY");
+//			String activity = rs.getString("ACTIVITY");
 //			String user_id = rs.getString("USER_ID");
 //			String guahao_id = rs.getString("GUAHAO_ID"); 
 			String activity_time = sdf.format(rs.getTimestamp("VISIT_TIME"));
-			String activity = rs.getNString("VISIT_MEAN");
+			String activity = rs.getString("VISIT_MEAN");
 			String user_id = rs.getString("USER_ID");
 			String guahao_id = rs.getString("CASE_ID"); 
 			List<HospitalEvent> events = null;

@@ -192,7 +192,7 @@ public class DB2Xes {
 		int idx = 0;
 		while (rs.next()) {
 			String activity_time = sdf.format(rs.getTimestamp("TIMESTAMP"));
-			String activity = rs.getNString("ACTIVITY");
+			String activity = rs.getString("ACTIVITY");
 			String user_id = rs.getString("USER_RESOURCE");
 			String case_id = rs.getString("CASE_ID"); 
 			List<Event> events = null;

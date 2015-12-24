@@ -103,7 +103,7 @@ public class DBtoXes {
 		int idx = 0;
 		while (rs.next()) {
 			String activity_time = sdf.format(rs.getTimestamp("ACTIVITY_TIME"));
-			String activity = rs.getNString("ACTIVITY");
+			String activity = rs.getString("ACTIVITY");
 			String user_id = rs.getString("USER_ID");
 			String guahao_id = rs.getString("GUAHAO_ID"); 
 			List<HospitalEvent> events = null;
@@ -270,7 +270,7 @@ public  List<String> getRegs() throws ClassNotFoundException, InstantiationExcep
 				startTime = (startTime == null || startTime.compareTo(activity_time) > 0) ? activity_time : startTime;
 				endTime = (endTime == null || endTime.compareTo(activity_time) < 0) ? activity_time : endTime;
 			}
-			String activity = rs.getNString("ACTIVITY");
+			String activity = rs.getString("ACTIVITY");
 			list.add(new HospitalEvent(activity, activity_time, rs.getString("USER_ID"), rs.getString("GUAHAO_ID")));
 			//a=rs.getString("检验.挂号序号");
 			count ++;
