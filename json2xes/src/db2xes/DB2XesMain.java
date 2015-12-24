@@ -27,17 +27,21 @@ public class DB2XesMain {
 //			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "866102022218694");
 //			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "867620026805215");
 //			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", true, false);
-//			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", false, false);
+			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", false, false);
 //			DB2XesMain.genXES_AllModule(filepath+"/modules");
 //			DB2XesMain.genXES_AllBusinessModule(filepath+"/bus_modules");
 //			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", true, true);
 //			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", false, true);
 //			DB2XesMain.genXES_AllNotLoginUsers(filepath+"/not_login");
-			String[] versions = {"2.1.0","2.1.01"};
-			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, false, versions);
-			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, false, versions);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, true, versions);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, true, versions);
+//			String[] versions = {"2.1.0","2.1.01"};
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, false, versions, false);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, false, versions, false);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, true, versions, false);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, true, versions, false);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", true, false, versions, true);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", false, false, versions, true);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", true, true, versions, true);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", false, true, versions, true);
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
@@ -74,6 +78,15 @@ public class DB2XesMain {
 	
 	// 生成各医院的XES （isDaoyi = true表示导医用户，否则表示一般用户）
 	public static void genXES_AllHospital(String filepath, boolean isDaoyi, boolean considerModule) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		String desc_suffix = ""; String xes_suffix = ""; String daoyi_query = "";
+		if (isDaoyi) {
+			desc_suffix = "daoyi";
+			xes_suffix = "导医用户";
+			daoyi_query = "NOT ";
+		} else {
+			desc_suffix = "regular";
+			xes_suffix = "自发用户";
+		}
 		Map<String, Integer> hospitalMaps = new HashMap<String, Integer>() {
 			/**
 			 * 初始化十佳医院列表
@@ -145,15 +158,6 @@ public class DB2XesMain {
 			}
 			for (String hname : hospitalMaps.keySet()) {
 				Integer hid = hospitalMaps.get(hname);
-				String desc_suffix = ""; String xes_suffix = ""; String daoyi_query = "";
-				if (isDaoyi) {
-					desc_suffix = "daoyi";
-					xes_suffix = "导医用户";
-					daoyi_query = "NOT ";
-				} else {
-					desc_suffix = "regular";
-					xes_suffix = "自发用户";
-				}
 				String descname = "qyw_" + hid + "_" + desc_suffix + module;
 				String xesname = hname + "_" + xes_suffix + module;
 				String eventprefix = hname;
@@ -300,11 +304,24 @@ public class DB2XesMain {
 	}
 	
 	//  版本比较（区分医院、导医用户）
-	public static void genXES_AllHospital_version(String filepath, boolean isDaoyi, boolean considerModule, String[] versions) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void genXES_AllHospital_version(String filepath, boolean isDaoyi, boolean considerModule, String[] versions, boolean isExclude) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		String desc_suffix = ""; String xes_suffix = ""; String daoyi_query = "";
+		if (isDaoyi) {
+			desc_suffix = "daoyi";
+			xes_suffix = "导医用户";
+			daoyi_query = "NOT ";
+		} else {
+			desc_suffix = "regular";
+			xes_suffix = "自发用户";
+		}
 		String version_str = "";
 		String version = "_"+"版本";
 		for (String v : versions) {
 			version_str += ("\'" + v + "\',");
+		}
+		String isexclude_query = "";
+		if (isExclude) {
+			isexclude_query = "NOT ";
 		}
 		version_str = version_str.substring(0, version_str.length() - 1);
 		Map<String, Integer> hospitalMaps = new HashMap<String, Integer>() {
@@ -383,17 +400,6 @@ public class DB2XesMain {
 			}
 			for (String hname : hospitalMaps.keySet()) {
 				Integer hid = hospitalMaps.get(hname);
-				String desc_suffix = "";
-				String xes_suffix = "";
-				String daoyi_query = "";
-				if (isDaoyi) {
-					desc_suffix = "daoyi";
-					xes_suffix = "导医用户";
-					daoyi_query = "NOT ";
-				} else {
-					desc_suffix = "regular";
-					xes_suffix = "自发用户";
-				}
 				String descname = "qyw_" + hid + "_" + desc_suffix + module + version;
 				String xesname = hname + "_" + xes_suffix + module + version;
 				String eventprefix = hname;
@@ -404,7 +410,8 @@ public class DB2XesMain {
 				Statement stmt0 = con.createStatement();
 				long beginTime = System.currentTimeMillis(); // 获取开始时间
 				stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
-				String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, t4.USER_ID, VISIT_MEAN FROM (SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM (SELECT CONCAT_WS(\'@\',USER_ID,DATE_FORMAT(VISIT_TIME,\'%Y-%m-%d\')) AS CASE_ID, VISIT_TIME, USER_ID, t2.MEAN AS VISIT_MEAN, HOSPITAL_ID, t2.CATEGORY AS VISIT_CAT, t1.VISIT_OP, t2.TRIGGER_TYPE, t1.APP_UUID, t1.IMEI_ID, t1.CHANNEL_ID FROM (SELECT * FROM c_cus_user_visit_records_20151207_07 WHERE APP_VERSION IN ("
+				String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, t4.USER_ID, VISIT_MEAN FROM (SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM (SELECT CONCAT_WS(\'@\',USER_ID,DATE_FORMAT(VISIT_TIME,\'%Y-%m-%d\')) AS CASE_ID, VISIT_TIME, USER_ID, t2.MEAN AS VISIT_MEAN, HOSPITAL_ID, t2.CATEGORY AS VISIT_CAT, t1.VISIT_OP, t2.TRIGGER_TYPE, t1.APP_UUID, t1.IMEI_ID, t1.CHANNEL_ID FROM (SELECT * FROM c_cus_user_visit_records_20151207_07 WHERE APP_VERSION "
+						+ isexclude_query + "IN ("
 						+ version_str
 						+ ") ORDER BY VISIT_OP) AS t1 LEFT JOIN (SELECT * FROM sys_business_dict_20151207_07 WHERE DICT_ID != 112 AND DICT_ID != 113 ORDER BY VISIT_OP) AS t2 ON t1.VISIT_OP = t2.VISIT_OP) AS t3 WHERE HOSPITAL_ID = \'"
 						+ hid
