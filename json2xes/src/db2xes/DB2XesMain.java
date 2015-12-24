@@ -32,7 +32,12 @@ public class DB2XesMain {
 //			DB2XesMain.genXES_AllBusinessModule(filepath+"/bus_modules");
 //			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", true, true);
 //			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", false, true);
-			DB2XesMain.genXES_AllNotLoginUsers(filepath+"/not_login");
+//			DB2XesMain.genXES_AllNotLoginUsers(filepath+"/not_login");
+			String[] versions = {"2.1.0","2.1.01"};
+			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, false, versions);
+			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, false, versions);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, true, versions);
+//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, true, versions);
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
@@ -292,6 +297,133 @@ public class DB2XesMain {
 
 		// generate
 		DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
+	}
+	
+	//  版本比较（区分医院、导医用户）
+	public static void genXES_AllHospital_version(String filepath, boolean isDaoyi, boolean considerModule, String[] versions) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		String version_str = "";
+		String version = "_"+"版本";
+		for (String v : versions) {
+			version_str += ("\'" + v + "\',");
+		}
+		version_str = version_str.substring(0, version_str.length() - 1);
+		Map<String, Integer> hospitalMaps = new HashMap<String, Integer>() {
+			/**
+			 * 初始化十佳医院列表
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{
+				put("武汉市中心医院", 270001);
+//				put("十堰市太和医院", 7190002);
+//				put("十堰市人民医院", 7190001);
+//				put("洛阳市妇女儿童医疗保健中心", 3790008);
+//				put("济宁医学院附属医院", 1002);
+//				put("吉林省人民医院", 4310001);
+//				put("徐州市中心医院", 5160004);
+//				put("安徽省中医院", 5510002);
+//				put("洛阳市第一中医院", 3790010);
+//				put("昆明呈贡医院", 8710004);
+			}
+		};
+		Map<String, List<String>> businessModule = new HashMap<String, List<String>>() {
+			/**
+			 * 业务模块<->VISIT_OP_CAT对应表
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{
+				put("预约挂号", new ArrayList<String>() {
+					/**
+					 * 预约挂号
+					 */
+					private static final long serialVersionUID = 1L;
+
+					{
+						add("/APP/appoint");
+						add("/APP/area");
+						add("/APP/center");
+						add("/APP/hospitalInform");
+						add("/APP/medicalGuideWindow");
+						add("/APP/multibusiness");
+						add("/APP/patientwords");
+						add("/APP/register");
+						add("/APP/satisfaction");
+					}
+				});
+				// put("地理信息", new ArrayList<String>() {
+				// /**
+				// * 预约挂号
+				// */
+				// private static final long serialVersionUID = 1L;
+				//
+				// {
+				// add("/APP/area");
+				// }});
+			}
+		};
+		Iterator<Entry<String, List<String>>> iter = businessModule.entrySet()
+				.iterator();
+		do {
+			String module = "";
+			String module_str = "";
+			if (considerModule) {
+				Map.Entry<String, List<String>> entry = (Map.Entry<String, List<String>>) iter
+						.next();
+				module = "_" + entry.getKey();
+				List<String> visit_op_cats = entry.getValue();
+				String visit_op_cats_str = "";
+				for (String visit_op_cat : visit_op_cats) {
+					visit_op_cats_str += ("\'" + visit_op_cat + "\',");
+				}
+				visit_op_cats_str = visit_op_cats_str.substring(0,
+						visit_op_cats_str.length() - 1);
+				module_str = " AND SUBSTRING_INDEX(VISIT_OP,\'/\', 3) IN ("
+						+ visit_op_cats_str + ")";
+			}
+			for (String hname : hospitalMaps.keySet()) {
+				Integer hid = hospitalMaps.get(hname);
+				String desc_suffix = "";
+				String xes_suffix = "";
+				String daoyi_query = "";
+				if (isDaoyi) {
+					desc_suffix = "daoyi";
+					xes_suffix = "导医用户";
+					daoyi_query = "NOT ";
+				} else {
+					desc_suffix = "regular";
+					xes_suffix = "自发用户";
+				}
+				String descname = "qyw_" + hid + "_" + desc_suffix + module + version;
+				String xesname = hname + "_" + xes_suffix + module + version;
+				String eventprefix = hname;
+
+				// prepare (produce data to db2xes.xesevents)
+				Connection con = DB2Xes.getCon("qyw");
+				Statement stmt = con.createStatement();
+				Statement stmt0 = con.createStatement();
+				long beginTime = System.currentTimeMillis(); // 获取开始时间
+				stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
+				String query = "INSERT INTO db2xes.xesevents SELECT CASE_ID, VISIT_TIME, t4.USER_ID, VISIT_MEAN FROM (SELECT CASE_ID, VISIT_TIME, USER_ID, CONCAT_WS(\'+\',VISIT_MEAN,IF(VISIT_OP REGEXP \'/$\', SUBSTRING_INDEX(VISIT_OP,\'/\',\'-3\'), SUBSTRING_INDEX(VISIT_OP,\'/\',\'-1\'))) AS VISIT_MEAN FROM (SELECT CONCAT_WS(\'@\',USER_ID,DATE_FORMAT(VISIT_TIME,\'%Y-%m-%d\')) AS CASE_ID, VISIT_TIME, USER_ID, t2.MEAN AS VISIT_MEAN, HOSPITAL_ID, t2.CATEGORY AS VISIT_CAT, t1.VISIT_OP, t2.TRIGGER_TYPE, t1.APP_UUID, t1.IMEI_ID, t1.CHANNEL_ID FROM (SELECT * FROM c_cus_user_visit_records_20151207_07 WHERE APP_VERSION IN ("
+						+ version_str
+						+ ") ORDER BY VISIT_OP) AS t1 LEFT JOIN (SELECT * FROM sys_business_dict_20151207_07 WHERE DICT_ID != 112 AND DICT_ID != 113 ORDER BY VISIT_OP) AS t2 ON t1.VISIT_OP = t2.VISIT_OP) AS t3 WHERE HOSPITAL_ID = \'"
+						+ hid
+						+ "\' AND USER_ID > 0"
+						+ module_str
+						+ " ORDER BY USER_ID) AS t4 LEFT JOIN (SELECT user_id AS DAOYI_ID FROM qyw.daoyi_users_20151207_07 ORDER BY DAOYI_ID) AS t5 ON t4.USER_ID = t5.DAOYI_ID WHERE t5.DAOYI_ID IS "
+						+ daoyi_query + "NULL ORDER BY VISIT_TIME";
+				stmt.executeUpdate(query);
+				long finishTime = System.currentTimeMillis(); // 获取结束时间
+				System.out.println(query + " 运行时间： " + (finishTime - beginTime)
+						/ 1000 / 60 + "min, " + (finishTime - beginTime)
+						% (1000 * 60) / 1000 + "s, " + (finishTime - beginTime)
+						% (1000 * 60) % 1000 + "ms");
+
+				// generate
+				DB2XesMain
+						.generateXES(filepath, descname, xesname, eventprefix);
+			}
+		} while (considerModule && iter.hasNext());
 	}
 	
 	public static void generateXES(String filepath, String descname, String xesname, String eventprefix) {
