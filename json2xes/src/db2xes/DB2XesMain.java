@@ -17,31 +17,48 @@ import java.util.Map.Entry;
 
 public class DB2XesMain {
 
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		long startTime=System.currentTimeMillis();   //获取开始时间
+//		
+//		String filepath = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第三阶段/XES";
+//		
+//		try {
+////			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "866102022218694");
+////			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "867620026805215");
+////			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", true, false);
+//			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", false, false);
+////			DB2XesMain.genXES_AllModule(filepath+"/modules");
+////			DB2XesMain.genXES_AllBusinessModule(filepath+"/bus_modules");
+////			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", true, true);
+////			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", false, true);
+////			DB2XesMain.genXES_AllNotLoginUsers(filepath+"/not_login");
+////			String[] versions = {"2.1.0","2.1.01"};
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, false, versions, false);
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, false, versions, false);
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, true, versions, false);
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, true, versions, false);
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", true, false, versions, true);
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", false, false, versions, true);
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", true, true, versions, true);
+////			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", false, true, versions, true);
+//		} catch (InstantiationException | IllegalAccessException
+//				| ClassNotFoundException | SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		long endTime=System.currentTimeMillis(); //获取结束时间
+//		System.out.println("Whole 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");
+//	}
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		long startTime=System.currentTimeMillis();   //获取开始时间
 		
-		String filepath = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第三阶段/XES";
+		String filepath = "/Users/dujiawei/Desktop/homework/XES";
 		
 		try {
-//			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "866102022218694");
-//			DB2XesMain.genXES_SpecialCase(filepath+"/cases", "867620026805215");
-//			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", true, false);
-			DB2XesMain.genXES_AllHospital(filepath+"/hospitals", false, false);
-//			DB2XesMain.genXES_AllModule(filepath+"/modules");
-//			DB2XesMain.genXES_AllBusinessModule(filepath+"/bus_modules");
-//			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", true, true);
-//			DB2XesMain.genXES_AllHospital(filepath+"/hos_modules", false, true);
-//			DB2XesMain.genXES_AllNotLoginUsers(filepath+"/not_login");
-//			String[] versions = {"2.1.0","2.1.01"};
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, false, versions, false);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, false, versions, false);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", true, true, versions, false);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/2.1.0", false, true, versions, false);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", true, false, versions, true);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", false, false, versions, true);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", true, true, versions, true);
-//			DB2XesMain.genXES_AllHospital_version(filepath+"/versions/old", false, true, versions, true);
+			DB2XesMain.genXES_Renji(filepath);
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
@@ -49,6 +66,65 @@ public class DB2XesMain {
 		}
 		long endTime=System.currentTimeMillis(); //获取结束时间
 		System.out.println("Whole 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");
+	}
+	
+	public static void genXES_Renji(String filepath)  throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		String descname = "";
+		String xesname = "典型案例";
+		String eventprefix = "典型案例";
+		
+		List<String> querys = new ArrayList<String>() {
+			/**
+			 * 初始化query列表
+			 */
+			private static final long serialVersionUID = 1L;
+			{
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-04-01 00:00:00' AND GH_TIMESTAMP <= '2014-04-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 0, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-05-01 00:00:00' AND GH_TIMESTAMP <= '2014-05-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 0, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-06-01 00:00:00' AND GH_TIMESTAMP <= '2014-06-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 0, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-07-01 00:00:00' AND GH_TIMESTAMP <= '2014-07-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 0, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-08-01 00:00:00' AND GH_TIMESTAMP <= '2014-08-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 0, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-09-01 00:00:00' AND GH_TIMESTAMP <= '2014-09-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 0, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-07-01 00:00:00' AND GH_TIMESTAMP <= '2014-07-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 1000, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-06-01 00:00:00' AND GH_TIMESTAMP <= '2014-06-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 1000, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-04-01 00:00:00' AND GH_TIMESTAMP <= '2014-04-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-05-01 00:00:00' AND GH_TIMESTAMP <= '2014-05-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-06-01 00:00:00' AND GH_TIMESTAMP <= '2014-06-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-07-01 00:00:00' AND GH_TIMESTAMP <= '2014-07-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-08-01 00:00:00' AND GH_TIMESTAMP <= '2014-08-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-09-01 00:00:00' AND GH_TIMESTAMP <= '2014-09-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-07-01 00:00:00' AND GH_TIMESTAMP <= '2014-07-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 1350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-06-01 00:00:00' AND GH_TIMESTAMP <= '2014-06-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 1350, 350) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-04-01 00:00:00' AND GH_TIMESTAMP <= '2014-04-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-05-01 00:00:00' AND GH_TIMESTAMP <= '2014-05-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-06-01 00:00:00' AND GH_TIMESTAMP <= '2014-06-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-07-01 00:00:00' AND GH_TIMESTAMP <= '2014-07-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-08-01 00:00:00' AND GH_TIMESTAMP <= '2014-08-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-09-01 00:00:00' AND GH_TIMESTAMP <= '2014-09-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-07-01 00:00:00' AND GH_TIMESTAMP <= '2014-07-31 23:59:59' ORDER BY GUAHAO_ID LIMIT 1700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM (SELECT * FROM renji.eventlog ORDER BY GUAHAO_ID) AS T1 INNER JOIN (SELECT DISTINCT GUAHAO_ID FROM renji.guahao WHERE GH_TIMESTAMP >= '2014-06-01 00:00:00' AND GH_TIMESTAMP <= '2014-06-30 23:59:59' ORDER BY GUAHAO_ID LIMIT 1700, 300) AS T2 ON T1.GUAHAO_ID = T2.GUAHAO_ID ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+			}
+		};
+		
+		for (int i=0; i<querys.size(); i++) {
+			descname = (""+(i+1));
+			xesname = ("典型案例_"+(i+1));
+			// prepare (produce data to db2xes.xesevents)
+			Connection con = DB2Xes.getCon("renji");
+			Statement stmt = con.createStatement();
+			Statement stmt0 = con.createStatement();
+			long beginTime = System.currentTimeMillis(); // 获取开始时间
+			stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
+			String query = querys.get(i);
+			stmt.executeUpdate(query);
+			long finishTime = System.currentTimeMillis(); // 获取结束时间
+			System.out.println(query + " 运行时间： " + (finishTime - beginTime) / 1000
+					/ 60 + "min, " + (finishTime - beginTime) % (1000 * 60) / 1000
+					+ "s, " + (finishTime - beginTime) % (1000 * 60) % 1000 + "ms");
+
+			// generate
+			DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
+		}
 	}
 	
 	// 生成典型案例XES
