@@ -33,7 +33,7 @@ public class DB2XesMain5th {
 		String descname = "趣医网第五次日志";
 		String xesname = "趣医网第五次日志";
 		String eventprefix = "qyw";
-		String query = "INSERT INTO db2xes.xesevents SELECT DISTINCT CASE_ID, OPERATE_TIME AS VISIT_TIME, USER_ID, ELEMENT_NAME AS VISIT_MEAN FROM qyw.qyw_5th_event WHERE ELEMENT_NAME != \'\' AND ELEMENT_NAME IS NOT null;";
+		String query = "INSERT INTO db2xes.xesevents SELECT DISTINCT CASE_ID, OPERATE_TIME AS VISIT_TIME, USER_ID, CONCAT_WS('@',ELEMENT_NAME,PAGE_NAME) AS VISIT_MEAN FROM qyw.qyw_5th_event WHERE ELEMENT_NAME != \'\' AND PAGE_NAME != \'\' AND ELEMENT_NAME IS NOT null;";
 		
 		Connection conn = DB2Xes.getCon("qyw");
 		Statement stmt0 = conn.createStatement();
