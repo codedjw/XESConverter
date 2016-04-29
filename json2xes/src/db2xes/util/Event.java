@@ -1,4 +1,4 @@
-package db2xes;
+package db2xes.util;
 
 public class Event {
 	String activity;

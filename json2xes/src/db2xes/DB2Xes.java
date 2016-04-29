@@ -21,6 +21,8 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
+import db2xes.util.Event;
+
 public class DB2Xes {
 	
 	public boolean isBPMN = false;
@@ -91,7 +93,8 @@ public class DB2Xes {
 		return con;
 	}
 	
-	private Document prepare(String name){
+	// 写XES文件头
+	protected Document prepare(String name){
 		 Element root = DocumentHelper.createElement("log");
 	        Document document = DocumentHelper.createDocument(root); 
 
@@ -168,7 +171,7 @@ public class DB2Xes {
 	    	return document;
 	}
 
-	public Document generate(Document document, String eventprefix) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	protected Document generate(Document document, String eventprefix) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		System.out.println("Generate Big");
 		Connection con = DB2Xes.getCon(this.DB_NAME);
 		Statement stmt = con.createStatement();
@@ -242,7 +245,7 @@ public class DB2Xes {
 		return document;
 	}
 	
-	private Document addRegEvents(Document document,List<Event> list, String case_id,String name){
+	protected Document addRegEvents(Document document,List<Event> list, String case_id,String name){
 //		System.out.println("ok addRegEvents");
 		Document document2 = DocumentHelper.createDocument();
 		
@@ -284,7 +287,7 @@ public class DB2Xes {
 		
 	}
 	
-	private void output(Document document){
+	protected void output(Document document){
         OutputFormat format = new OutputFormat("    ", true);// 设置缩进为4个空格，并且另起一行为true
         XMLWriter xmlWriter2;
 		try {

@@ -1,4 +1,4 @@
-package db2xes;
+package db2xes.util;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
