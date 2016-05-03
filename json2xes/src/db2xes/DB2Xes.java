@@ -226,6 +226,7 @@ public class DB2Xes {
 			events.add(new Event(activity, activity_time, user_id, case_id));
 			case_events.put(case_id, events);
 		}
+		// for last BPMN case
 		if (last_case_id != null && (last_events = case_events.get(last_case_id)) != null) {
 			if (this.isBPMN) {
 				last_events.add(0, new Event("Start", startTime, "__NULL__", last_case_id));
