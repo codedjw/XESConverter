@@ -37,16 +37,17 @@ public class DB2XesMain6th {
 		String query = sql;
 		
 		Connection conn = DB2Xes.getCon("qyw");
-		Statement stmt0 = conn.createStatement();
 		Statement stmt = conn.createStatement();
 		long beginTime = System.currentTimeMillis(); // 获取开始时间
-		stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
+		stmt.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
 		stmt.executeUpdate(query);
 		long finishTime = System.currentTimeMillis(); // 获取结束时间
 		System.out.println(query + " 运行时间： " + (finishTime - beginTime) / 1000
 				/ 60 + "min, " + (finishTime - beginTime) % (1000 * 60) / 1000
 				+ "s, " + (finishTime - beginTime) % (1000 * 60) % 1000 + "ms");
 		DB2XesHelp.generateXES(filepath, descname, xesname, eventprefix);
+		stmt.close();
+		conn.close();
 	}
 
 }

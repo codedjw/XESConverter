@@ -127,6 +127,7 @@ public class DB2XesStart2End extends DB2Xes {
 				System.out.println("Case " + last_case_id + ": " + count + "个event");
 			}
 		}
+		stmt.close();
 		con.close();
 		// do start_to_end filter
 		Map<String, List<Event>> filter_case_events = new HashMap<String, List<Event>>();

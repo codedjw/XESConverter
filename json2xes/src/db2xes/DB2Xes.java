@@ -236,6 +236,7 @@ public class DB2Xes {
 			System.out.println(++idx);
 			System.out.println("Case " + last_case_id + ": " + count + "个event");
 		}
+		stmt.close();
 		con.close();
 		for (String cid : case_events.keySet()) {
 			List<Event> eves = case_events.get(cid);
