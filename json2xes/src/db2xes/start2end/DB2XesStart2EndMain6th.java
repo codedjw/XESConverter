@@ -31,6 +31,8 @@ public class DB2XesStart2EndMain6th {
 //			params = DB2XesStart2EndMain6th.initYuYueAll_Old();
 //			params = DB2XesStart2EndMain6th.initYuYueSucc_New();
 //			params = DB2XesStart2EndMain6th.initYuYueSucc_Old();
+//			params = DB2XesStart2EndMain6th.initYuYueFail_New();
+//			params = DB2XesStart2EndMain6th.initYuYueFail_Old();
 			DB2XesStart2EndMain6th.genXes(filepath, (String)params.get("query_tmp"), (String)params.get("query"), (String)params.get("name"), (List<String>)params.get("startEvents"), (List<String>)params.get("endEvents"));
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
@@ -161,6 +163,44 @@ public class DB2XesStart2EndMain6th {
 		params.put("query_tmp", null);
 		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT t3.CASE_ID, t3.VISIT_TIME, t3.USER_ID, t3.VISIT_MEAN FROM (SELECT * FROM qyw_4th_event_old_user WHERE CASE_ID IN (SELECT DISTINCT CASE_ID FROM qyw_4th_event_old_user WHERE VISIT_MEAN IN (\'C端主页的预约挂号入口\', \'获取医生列表\')) ORDER BY VISIT_MEAN) AS t3 INNER JOIN (SELECT * FROM qyw.sys_business_dict_20151207_07 ORDER BY MEAN) AS t4 ON t3.VISIT_MEAN = t4.MEAN WHERE t4.TRIGGER_TYPE = \'用户点击\' ORDER BY t3.USER_ID, t3.VISIT_TIME;");
 		params.put("name", "趣医网第六次日志_老用户_预约业务（所有）");
+		params.put("startEvents", new ArrayList<String>() {
+			{
+				add("C端主页的预约挂号入口");
+				add("获取医生列表");
+			}
+		});
+		params.put("endEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		return params;
+	}
+	
+	public static Map<String, Object> initYuYueFail_New() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("query_tmp", null);
+		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT t3.CASE_ID, t3.VISIT_TIME, t3.USER_ID, t3.VISIT_MEAN FROM (SELECT * FROM qyw_4th_event_new_user WHERE CASE_ID IN (SELECT DISTINCT t1.CASE_ID FROM (SELECT DISTINCT CASE_ID FROM qyw_4th_event_new_user WHERE VISIT_MEAN IN (\'C端主页的预约挂号入口\', \'获取医生列表\')) AS t1 LEFT JOIN (SELECT DISTINCT CASE_ID FROM qyw_4th_event_new_user WHERE VISIT_MEAN IN (\'获取预约挂号结果页面\', \'获取预约挂号详情\')) AS t2 ON t1.CASE_ID = t2.CASE_ID WHERE t2.CASE_ID IS NULL) ORDER BY VISIT_MEAN) AS t3 INNER JOIN (SELECT * FROM qyw.sys_business_dict_20151207_07 ORDER BY MEAN) AS t4 ON t3.VISIT_MEAN = t4.MEAN WHERE t4.TRIGGER_TYPE = \'用户点击\' ORDER BY t3.USER_ID, t3.VISIT_TIME;");
+		params.put("name", "趣医网第六次日志_新用户_预约业务（失败）");
+		params.put("startEvents", new ArrayList<String>() {
+			{
+				add("C端主页的预约挂号入口");
+				add("获取医生列表");
+			}
+		});
+		params.put("endEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		return params;
+	}
+	
+	public static Map<String, Object> initYuYueFail_Old() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("query_tmp", null);
+		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT t3.CASE_ID, t3.VISIT_TIME, t3.USER_ID, t3.VISIT_MEAN FROM (SELECT * FROM qyw_4th_event_old_user WHERE CASE_ID IN (SELECT DISTINCT t1.CASE_ID FROM (SELECT DISTINCT CASE_ID FROM qyw_4th_event_old_user WHERE VISIT_MEAN IN (\'C端主页的预约挂号入口\', \'获取医生列表\')) AS t1 LEFT JOIN (SELECT DISTINCT CASE_ID FROM qyw_4th_event_old_user WHERE VISIT_MEAN IN (\'获取预约挂号结果页面\', \'获取预约挂号详情\')) AS t2 ON t1.CASE_ID = t2.CASE_ID WHERE t2.CASE_ID IS NULL) ORDER BY VISIT_MEAN) AS t3 INNER JOIN (SELECT * FROM qyw.sys_business_dict_20151207_07 ORDER BY MEAN) AS t4 ON t3.VISIT_MEAN = t4.MEAN WHERE t4.TRIGGER_TYPE = \'用户点击\' ORDER BY t3.USER_ID, t3.VISIT_TIME;");
+		params.put("name", "趣医网第六次日志_老用户_预约业务（失败）");
 		params.put("startEvents", new ArrayList<String>() {
 			{
 				add("C端主页的预约挂号入口");
