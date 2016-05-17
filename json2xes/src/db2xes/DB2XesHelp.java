@@ -13,6 +13,8 @@ public class DB2XesHelp {
 																// 医院名_regular.xes
 		String logname = filepath + "/" + descname + ".log"; // 医院名_daoyi.log or
 																// 医院名_regular.log
+		String csvname = filepath + "/" + descname + ".csv"; // 医院名_daoyi.csv or
+																// 医院名_regular.csv
 		PrintStream sysout = System.out; // always console output
 
 		// --- BEGIN --- (redirect log output to file)
@@ -31,7 +33,7 @@ public class DB2XesHelp {
 
 		DB2Xes db2xes = new DB2Xes(false, true, "db2xes", "db2xes.xesevents",
 				"CASE_ID", "USER_ID", "VISIT_TIME", "VISIT_MEAN", filename,
-				xesname, eventprefix);
+				xesname, csvname, eventprefix);
 		db2xes.db2xes();
 
 		System.setOut(sysout);

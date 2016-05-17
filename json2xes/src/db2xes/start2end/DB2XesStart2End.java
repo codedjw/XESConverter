@@ -31,9 +31,9 @@ public class DB2XesStart2End extends DB2Xes {
 	public DB2XesStart2End(boolean isBPMN, boolean isDistinct, String dB_NAME,
 			String tB_NAME, String cASE_ID, String uSER_RESOURCE,
 			String tIMESTAMP, String aCTIVITY, String filename, String xesname,
-			String eventprefix) {
+			String csvname, String eventprefix) {
 		super(isBPMN, isDistinct, dB_NAME, tB_NAME, cASE_ID, uSER_RESOURCE, tIMESTAMP,
-				aCTIVITY, filename, xesname, eventprefix);
+				aCTIVITY, filename, xesname, csvname, eventprefix);
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -132,10 +132,10 @@ public class DB2XesStart2End extends DB2Xes {
 		// do start_to_end filter
 		Map<String, List<Event>> filter_case_events = new HashMap<String, List<Event>>();
 		if (this.start_events.isEmpty() && this.end_events.isEmpty()) {
-			// no A and no F
+			System.out.println("no A and no F");
 			filter_case_events = case_events;
 		} else if (!this.start_events.isEmpty() && this.end_events.isEmpty()) {
-			// A and no F
+			System.out.println("A and no F");
 			IntWrapper cnt = new IntWrapper(0);
 			for (String cid : case_events.keySet()) {
 				Map<String, List<Event>> split_case_events = this.doFilterCaseEvent(cid, case_events.get(cid), true, false, cnt);
@@ -144,7 +144,7 @@ public class DB2XesStart2End extends DB2Xes {
 				}
 			}
 		} else if (!this.start_events.isEmpty() && !this.end_events.isEmpty()) {
-			// A and F
+			System.out.println("A and F");
 			IntWrapper cnt = new IntWrapper(0);
 			for (String cid : case_events.keySet()) {
 				Map<String, List<Event>> split_case_events = this.doFilterCaseEvent(cid, case_events.get(cid), true, true, cnt);
@@ -153,7 +153,7 @@ public class DB2XesStart2End extends DB2Xes {
 				}
 			}
 		} else if (this.start_events.isEmpty() && !this.end_events.isEmpty()) {
-			// no A and F
+			System.out.println("no A and F");
 			filter_case_events = case_events;
 		}
 		for (String cid : filter_case_events.keySet()) {
@@ -162,6 +162,7 @@ public class DB2XesStart2End extends DB2Xes {
 				document = this.addRegEvents(document, eves, cid, eventprefix);
 			}
 		}
+		this.caseEvents = filter_case_events;
 		return document;
 	}
 	
@@ -179,7 +180,7 @@ public class DB2XesStart2End extends DB2Xes {
 					// find F
 					stack.push(i);
 				}
-				if (this.start_events.contains(activity)) {
+				if (this.start_events.contains(activity) && ((i-1>=0 && !this.start_events.contains(case_events.get(i-1).getActivity())) || (i-1 < 0))) {
 					// find A
 					if (!stack.empty()) {
 						int end_idx = stack.pop();
@@ -216,7 +217,7 @@ public class DB2XesStart2End extends DB2Xes {
 				if (i == case_events.size()-1) {
 					stack.push(i);
 				}
-				if (this.start_events.contains(activity)) {
+				if (this.start_events.contains(activity) && ((i-1>=0 && !this.start_events.contains(case_events.get(i-1).getActivity())) || (i-1 < 0))) {
 					// find A
 					if (!stack.empty()) {
 						int end_idx = stack.pop();

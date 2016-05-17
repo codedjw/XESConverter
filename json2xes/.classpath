@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/jackson-all-1.7.6.jar"/>
 	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/json-lib-2.4-jdk15.jar"/>
 	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/mysql-connector-java-5.1.7-bin.jar"/>
+	<classpathentry kind="lib" path="/Users/dujiawei/git/XESConverter/json2xes/lib/javacsv.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

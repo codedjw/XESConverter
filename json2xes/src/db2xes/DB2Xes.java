@@ -4,13 +4,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +23,8 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+
+import com.csvreader.CsvWriter;
 
 import db2xes.util.Event;
 
@@ -45,7 +50,11 @@ public class DB2Xes {
 	
 	public String xesname = "";
 	
+	public String csvname = "";
+	
 	public String eventprefix = "";
+	
+	protected Map<String, List<Event>> caseEvents = new HashMap<String, List<Event>>();
 
 	public DB2Xes() {
 		
@@ -54,7 +63,7 @@ public class DB2Xes {
 	public DB2Xes(boolean isBPMN, boolean isDistinct, String dB_NAME,
 			String tB_NAME, String cASE_ID, String uSER_RESOURCE,
 			String tIMESTAMP, String aCTIVITY, String filename, String xesname,
-			String eventprefix) {
+			String csvname, String eventprefix) {
 		super();
 		this.isBPMN = isBPMN;
 		this.isDistinct = isDistinct;
@@ -66,6 +75,7 @@ public class DB2Xes {
 		ACTIVITY = aCTIVITY;
 		this.filename = filename;
 		this.xesname = xesname;
+		this.csvname = csvname;
 		this.eventprefix = eventprefix;
 	}
 
@@ -81,6 +91,7 @@ public class DB2Xes {
 			e.printStackTrace();
 		}
 		this.output(document);
+		this.outputDurationCSV();
 	}
 	
 	public static Connection getCon(String dbname) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
@@ -244,6 +255,7 @@ public class DB2Xes {
 				document = this.addRegEvents(document, eves, cid, eventprefix);
 			}
 		}
+		this.caseEvents = case_events;
 		return document;
 	}
 	
@@ -307,5 +319,45 @@ public class DB2Xes {
 			e.printStackTrace();
 		}
         System.out.println("ok2");
+	}
+	
+	protected void outputDurationCSV() {
+		if (this.caseEvents != null && !this.caseEvents.isEmpty()) {
+			CsvWriter wr = new CsvWriter(csvname, ',', Charset.forName("UTF-8"));
+			String[] head = {"Case ID","Duration(S)"};
+			try {
+				wr.writeRecord(head, true);
+				for (String case_id : this.caseEvents.keySet()) {
+					List<Event> events = this.caseEvents.get(case_id);
+					Date first = null;
+					Date last = null;
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					if (events != null && !events.isEmpty()) {
+						for (Event eve : events) {
+							String nowStr = (eve != null && eve.getTimestamp() != null) ? eve.getTimestamp() : null;
+							nowStr = nowStr.replaceAll("T", " ");
+							Date now = (nowStr != null) ? sdf.parse(nowStr) : null;
+							if (now != null) {
+								first = (first == null || first.after(now)) ? now : first;
+								last = (last == null || last.before(now)) ? now : last;
+							}
+						}
+					}
+					if (first != null && last != null) {
+						long durationS = (last.getTime() - first.getTime())/1000;
+						String[] row = {case_id, String.valueOf(durationS)};
+						wr.writeRecord(row, true);
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				wr.close();
+			}
+		}
 	}
 }
