@@ -22,6 +22,10 @@ public class DB2XesStart2End extends DB2Xes {
 	private List<String> start_events = new ArrayList<String>();
 	
 	private List<String> end_events = new ArrayList<String>();
+	
+	private List<String> inKey_events = new ArrayList<String>();
+	
+	private List<String> exKey_events = new ArrayList<String>();
 
 	public DB2XesStart2End() {
 		super();
@@ -45,9 +49,19 @@ public class DB2XesStart2End extends DB2Xes {
 		this.end_events.add(e_event);
 	}
 	
-	public void clearAllStartEndEvents() {
+	public void addInKeyEvent(String e_event) {
+		this.inKey_events.add(e_event);
+	}
+	
+	public void addExKeyEvent(String e_event) {
+		this.exKey_events.add(e_event);
+	}
+	
+	public void clearAllFilterEvents() {
 		this.start_events.clear();
 		this.end_events.clear();
+		this.inKey_events.clear();
+		this.exKey_events.clear();
 	}
 	
 	public void addStartEvents(List<String> s_events) {
@@ -56,6 +70,14 @@ public class DB2XesStart2End extends DB2Xes {
 	
 	public void addEndEvents(List<String> e_events) {
 		this.end_events.addAll(e_events);
+	}
+	
+	public void addInKeyEvents(List<String> e_events) {
+		this.inKey_events.addAll(e_events);
+	}
+	
+	public void addExKeyEvents(List<String> e_events) {
+		this.exKey_events.addAll(e_events);
 	}
 	
 	protected Document generate(Document document, String eventprefix) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
@@ -129,7 +151,7 @@ public class DB2XesStart2End extends DB2Xes {
 		}
 		stmt.close();
 		con.close();
-		// do start_to_end filter
+		// do start_key_end filter
 		Map<String, List<Event>> filter_case_events = new HashMap<String, List<Event>>();
 		if (this.start_events.isEmpty() && this.end_events.isEmpty()) {
 			System.out.println("no A and no F");
@@ -155,6 +177,22 @@ public class DB2XesStart2End extends DB2Xes {
 		} else if (this.start_events.isEmpty() && !this.end_events.isEmpty()) {
 			System.out.println("no A and F");
 			filter_case_events = case_events;
+		}
+		if (this.inKey_events.isEmpty() && this.exKey_events.isEmpty()) {
+			System.out.println("no InKey and no ExKey");
+			filter_case_events = filter_case_events;
+		} else if (!this.inKey_events.isEmpty() && this.exKey_events.isEmpty()) {
+			System.out.println("InKey and no ExKey");
+			IntWrapper cnt = new IntWrapper(0);
+			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, true, false);
+		} else if (this.inKey_events.isEmpty() && !this.exKey_events.isEmpty()) {
+			System.out.println("no InKey and ExKey");
+			IntWrapper cnt = new IntWrapper(0);
+			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, false, true);
+		} else if (!this.inKey_events.isEmpty() && !this.exKey_events.isEmpty()) {
+			System.out.println("InKey and ExKey");
+			IntWrapper cnt = new IntWrapper(0);
+			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, true, true);
 		}
 		for (String cid : filter_case_events.keySet()) {
 			List<Event> eves = filter_case_events.get(cid);
@@ -248,6 +286,55 @@ public class DB2XesStart2End extends DB2Xes {
 						}
 						stack.push(i-1);
 					}
+				}
+			}
+		}
+		return split_cases;
+	}
+	
+	private Map<String, List<Event>> doFilterKeyCaseEvent(Map<String, List<Event>> case_events, IntWrapper cnt, boolean needIn, boolean needEx) {
+		Map<String, List<Event>> split_cases = null;
+		if (case_events != null && !case_events.isEmpty()) {
+			split_cases = new HashMap<String, List<Event>>();
+			for (String case_id : case_events.keySet()) {
+				List<Event> eves = case_events.get(case_id);
+				boolean inadd = false;
+				boolean exadd = true;
+				for (Event e : eves) {
+					if (needIn && !needEx) {
+						if (this.inKey_events.contains(e.getActivity())) {
+							inadd = true;
+							break;
+						}
+					} else if (!needIn && needEx) {
+						if (this.exKey_events.contains(e.getActivity())) {
+							exadd = false;
+							break;
+						}
+					} else if (needIn && needEx) {
+						if (this.inKey_events.contains(e.getActivity())) {
+							inadd = true;
+						}
+						if (this.exKey_events.contains(e.getActivity())) {
+							exadd = false;
+						}
+						if (!exadd) {
+							break;
+						}
+					}
+				}
+				boolean add = false;
+				if (needIn && !needEx) {
+					add = inadd;
+				} else if (!needIn && needEx) {
+					add = exadd;
+				} else if (needIn && needEx) {
+					add = inadd && exadd;
+				}
+				if (add) {
+					System.out.println(cnt.incr());
+					System.out.println("Case " + case_id + ": " + eves.size() + "个event");
+					split_cases.put(case_id, eves);
 				}
 			}
 		}

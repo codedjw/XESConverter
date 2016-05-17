@@ -33,7 +33,7 @@ public class DB2XesStart2EndMain6th {
 //			params = DB2XesStart2EndMain6th.initYuYueSucc_Old();
 //			params = DB2XesStart2EndMain6th.initYuYueFail_New();
 //			params = DB2XesStart2EndMain6th.initYuYueFail_Old();
-			DB2XesStart2EndMain6th.genXes(filepath, (String)params.get("query_tmp"), (String)params.get("query"), (String)params.get("name"), (List<String>)params.get("startEvents"), (List<String>)params.get("endEvents"));
+			DB2XesStart2EndMain6th.genXes(filepath, (String)params.get("query_tmp"), (String)params.get("query"), (String)params.get("name"), (List<String>)params.get("startEvents"), (List<String>)params.get("endEvents"), (List<String>)params.get("inKeyEvents"), (List<String>)params.get("exKeyEvents"));
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
@@ -60,6 +60,16 @@ public class DB2XesStart2EndMain6th {
 				add("获取预约挂号结果页面");
 			}
 		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
 		return params;
 	}
 	
@@ -74,6 +84,16 @@ public class DB2XesStart2EndMain6th {
 			}
 		});
 		params.put("endEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
 			{
 				
 			}
@@ -96,6 +116,16 @@ public class DB2XesStart2EndMain6th {
 				add("获取门诊已缴费记录");
 			}
 		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
 		return params;
 	}
 	
@@ -114,6 +144,20 @@ public class DB2XesStart2EndMain6th {
 			{
 				add("获取预约挂号结果页面");
 				add("获取预约挂号详情");
+			}
+		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				add("成功提交预约（不缴费）");
+				add("成功提交预约（缴费）");
+				add("成功提交挂号");
+				add("预约成功后支付");
+				add("挂号成功后支付");
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				
 			}
 		});
 		return params;
@@ -136,6 +180,20 @@ public class DB2XesStart2EndMain6th {
 				add("获取预约挂号详情");
 			}
 		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				add("成功提交预约（不缴费）");
+				add("成功提交预约（缴费）");
+				add("成功提交挂号");
+				add("预约成功后支付");
+				add("挂号成功后支付");
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
 		return params;
 	}
 	
@@ -151,6 +209,16 @@ public class DB2XesStart2EndMain6th {
 			}
 		});
 		params.put("endEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
 			{
 				
 			}
@@ -174,6 +242,16 @@ public class DB2XesStart2EndMain6th {
 				
 			}
 		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
 		return params;
 	}
 	
@@ -191,6 +269,20 @@ public class DB2XesStart2EndMain6th {
 		params.put("endEvents", new ArrayList<String>() {
 			{
 				
+			}
+		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				add("成功提交预约（不缴费）");
+				add("成功提交预约（缴费）");
+				add("成功提交挂号");
+				add("预约成功后支付");
+				add("挂号成功后支付");
 			}
 		});
 		return params;
@@ -212,11 +304,25 @@ public class DB2XesStart2EndMain6th {
 				
 			}
 		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				add("成功提交预约（不缴费）");
+				add("成功提交预约（缴费）");
+				add("成功提交挂号");
+				add("预约成功后支付");
+				add("挂号成功后支付");
+			}
+		});
 		return params;
 	}
 	
 	
-	public static void genXes(String filepath, String sql_tmp, String sql, String name, List<String> startEvents, List<String> endEvents)  throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void genXes(String filepath, String sql_tmp, String sql, String name, List<String> startEvents, List<String> endEvents, List<String> inKeyEvents, List<String> exKeyEvents)  throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		String descname = name;
 		String xesname = name;
 		String eventprefix = "qyw";
@@ -237,7 +343,7 @@ public class DB2XesStart2EndMain6th {
 		System.out.println(query + " 运行时间： " + (finishTime - beginTime) / 1000
 				/ 60 + "min, " + (finishTime - beginTime) % (1000 * 60) / 1000
 				+ "s, " + (finishTime - beginTime) % (1000 * 60) % 1000 + "ms");
-		DB2XesStart2EndHelp.generateXES(filepath, descname, xesname, eventprefix, startEvents, endEvents);
+		DB2XesStart2EndHelp.generateXES(filepath, descname, xesname, eventprefix, startEvents, endEvents, inKeyEvents, exKeyEvents);
 		stmt.close();
 		conn.close();
 	}
