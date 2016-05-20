@@ -91,7 +91,7 @@ public class DB2Xes {
 			e.printStackTrace();
 		}
 		this.output(document);
-		this.outputDurationCSV();
+		this.outputInfoCSV();
 	}
 	
 	public static Connection getCon(String dbname) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
@@ -321,10 +321,10 @@ public class DB2Xes {
         System.out.println("ok2");
 	}
 	
-	protected void outputDurationCSV() {
+	protected void outputInfoCSV() {
 		if (this.caseEvents != null && !this.caseEvents.isEmpty()) {
 			CsvWriter wr = new CsvWriter(csvname, ',', Charset.forName("UTF-8"));
-			String[] head = {"Case ID","Duration(S)"};
+			String[] head = {"CASE_ID","DURATION(S)","#Acitivites", "USER_ID", "START_TIME", "COMPLETE_TIME"};
 			try {
 				wr.writeRecord(head, true);
 				for (String case_id : this.caseEvents.keySet()) {
@@ -345,7 +345,7 @@ public class DB2Xes {
 					}
 					if (first != null && last != null) {
 						long durationS = (last.getTime() - first.getTime())/1000;
-						String[] row = {case_id, String.valueOf(durationS)};
+						String[] row = {case_id, String.valueOf(durationS), String.valueOf(events.size()), events.get(0).getResource(), sdf.format(first), sdf.format(last)};
 						wr.writeRecord(row, true);
 					}
 				}

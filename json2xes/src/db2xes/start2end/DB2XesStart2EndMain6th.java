@@ -17,23 +17,29 @@ public class DB2XesStart2EndMain6th {
 		String filepath = "/Users/dujiawei/Desktop/流程挖掘案例/趣医网/趣医网-第六阶段/XES/新老用户";
 		
 		try {
-			Map<String, Object> params = null;
+			List<Map<String, Object>> reqList = new ArrayList<Map<String, Object>>();
+			
+			// 初始化调用参数
 			// 预约成功
-//			params = DB2XesStart2EndMain6th.initYuyue_Succ();
+//			reqList.add(DB2XesStart2EndMain6th.initYuyue_Succ());
 			// 预约业务
-//			params = DB2XesStart2EndMain6th.initYuyue_All();
+//			reqList.add(DB2XesStart2EndMain6th.initYuyue_All());
 			// 门诊缴费
-//			params = DB2XesStart2EndMain6th.initMenZhenJiaoFei_Start_End();
-			
-			
+//			reqList.add(DB2XesStart2EndMain6th.initMenZhenJiaoFei_Start_End());		
 			// 新/老用户
-//			params = DB2XesStart2EndMain6th.initYuYueAll_New();
-//			params = DB2XesStart2EndMain6th.initYuYueAll_Old();
-//			params = DB2XesStart2EndMain6th.initYuYueSucc_New();
-//			params = DB2XesStart2EndMain6th.initYuYueSucc_Old();
-//			params = DB2XesStart2EndMain6th.initYuYueFail_New();
-//			params = DB2XesStart2EndMain6th.initYuYueFail_Old();
-			DB2XesStart2EndMain6th.genXes(filepath, (String)params.get("query_tmp"), (String)params.get("query"), (String)params.get("name"), (List<String>)params.get("startEvents"), (List<String>)params.get("endEvents"), (List<String>)params.get("inKeyEvents"), (List<String>)params.get("exKeyEvents"));
+			reqList.add(DB2XesStart2EndMain6th.initYuYueAll_New());
+			reqList.add(DB2XesStart2EndMain6th.initYuYueAll_Old());
+			reqList.add(DB2XesStart2EndMain6th.initYuYueSucc_New());
+			reqList.add(DB2XesStart2EndMain6th.initYuYueSucc_Old());
+			reqList.add(DB2XesStart2EndMain6th.initYuYueFail_New());
+			reqList.add(DB2XesStart2EndMain6th.initYuYueFail_Old());
+			
+			for (Map<String, Object> params : reqList) {
+				if (params != null && !params.isEmpty()) {
+					DB2XesStart2EndMain6th.genXes(filepath, (String)params.get("query_tmp"), (String)params.get("query"), (String)params.get("name"), (List<String>)params.get("startEvents"), (List<String>)params.get("endEvents"), (List<String>)params.get("inKeyEvents"), (List<String>)params.get("exKeyEvents"));
+				}
+			}
+			
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
