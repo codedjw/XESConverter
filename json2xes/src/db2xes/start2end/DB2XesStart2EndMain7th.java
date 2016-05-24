@@ -27,8 +27,11 @@ public class DB2XesStart2EndMain7th {
 //			reqList.add(DB2XesStart2EndMain7th.initYuYueSucc_Old());
 //			reqList.add(DB2XesStart2EndMain7th.initYuYueFail_New());
 //			reqList.add(DB2XesStart2EndMain7th.initYuYueFail_Old());
-			reqList.add(DB2XesStart2EndMain7th.initOthers_New());
-			reqList.add(DB2XesStart2EndMain7th.initOthers_Old());
+			reqList.add(DB2XesStart2EndMain7th.initYuYueAll_New_FilterOut());
+			reqList.add(DB2XesStart2EndMain7th.initYuYueAll_Old_FilterOut());
+			
+//			reqList.add(DB2XesStart2EndMain7th.initYuYueSucc_New_FilterOut());
+//			reqList.add(DB2XesStart2EndMain7th.initYuYueSucc_Old_FilterOut());
 			
 			for (Map<String, Object> params : reqList) {
 				if (params != null && !params.isEmpty()) {
@@ -254,11 +257,11 @@ public class DB2XesStart2EndMain7th {
 		return params;
 	}
 	
-	public static Map<String, Object> initOthers_Old() {
+	public static Map<String, Object> initYuYueAll_Old_FilterOut() {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("query_tmp", null);
-		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT t3.CASE_ID, t3.VISIT_TIME, t3.USER_ID, t3.VISIT_MEAN FROM (SELECT * FROM qyw_7th_event_old_user WHERE CASE_ID IN (SELECT DISTINCT CASE_ID FROM qyw_7th_event_old_user WHERE VISIT_MEAN IN (\'C端主页的预约挂号入口\', \'获取医生列表\')) ORDER BY VISIT_MEAN) AS t3 WHERE t3.TRIGGER_TYPE = \'用户点击\' ORDER BY t3.USER_ID, t3.VISIT_TIME;");
-		params.put("name", "趣医网第七次日志_老用户_其他业务");
+		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT CASE_ID, VISIT_TIME, USER_ID, VISIT_MEAN FROM qyw_7th_event_old_user WHERE TRIGGER_TYPE = \'用户点击\' ORDER BY USER_ID, VISIT_TIME;");
+		params.put("name", "趣医网第七次日志_老用户_除预约业务（所有）外");
 		params.put("filterIn", false);
 		params.put("startEvents", new ArrayList<String>() {
 			{
@@ -284,11 +287,11 @@ public class DB2XesStart2EndMain7th {
 		return params;
 	}
 	
-	public static Map<String, Object> initOthers_New() {
+	public static Map<String, Object> initYuYueAll_New_FilterOut() {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("query_tmp", null);
-		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT t3.CASE_ID, t3.VISIT_TIME, t3.USER_ID, t3.VISIT_MEAN FROM (SELECT * FROM qyw_7th_event_new_user WHERE CASE_ID IN (SELECT DISTINCT CASE_ID FROM qyw_7th_event_new_user WHERE VISIT_MEAN IN (\'C端主页的预约挂号入口\', \'获取医生列表\')) ORDER BY VISIT_MEAN) AS t3 WHERE t3.TRIGGER_TYPE = \'用户点击\' ORDER BY t3.USER_ID, t3.VISIT_TIME;");
-		params.put("name", "趣医网第七次日志_新用户_其他业务");
+		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT CASE_ID, VISIT_TIME, USER_ID, VISIT_MEAN FROM qyw_7th_event_new_user WHERE TRIGGER_TYPE = \'用户点击\' ORDER BY USER_ID, VISIT_TIME;");
+		params.put("name", "趣医网第七次日志_新用户_除预约业务（所有）外");
 		params.put("filterIn", false);
 		params.put("startEvents", new ArrayList<String>() {
 			{
@@ -304,6 +307,76 @@ public class DB2XesStart2EndMain7th {
 		params.put("inKeyEvents", new ArrayList<String>() {
 			{
 				
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		return params;
+	}
+	
+	public static Map<String, Object> initYuYueSucc_New_FilterOut() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("query_tmp", null);
+		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT CASE_ID, VISIT_TIME, USER_ID, VISIT_MEAN FROM qyw_7th_event_new_user WHERE TRIGGER_TYPE = \'用户点击\' ORDER BY USER_ID, VISIT_TIME;");
+		params.put("name", "趣医网第七次日志_新用户_除预约业务（成功）外");
+		params.put("filterIn", false);
+		params.put("startEvents", new ArrayList<String>() {
+			{
+				add("C端主页的预约挂号入口");
+				add("获取医生列表");
+			}
+		});
+		params.put("endEvents", new ArrayList<String>() {
+			{
+				add("获取预约挂号结果页面");
+				add("获取预约挂号详情");
+			}
+		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				add("成功提交预约（不缴费）");
+				add("成功提交预约（缴费）");
+				add("成功提交挂号");
+				add("预约成功后支付");
+				add("挂号成功后支付");
+			}
+		});
+		params.put("exKeyEvents", new ArrayList<String>() {
+			{
+				
+			}
+		});
+		return params;
+	}
+	
+	public static Map<String, Object> initYuYueSucc_Old_FilterOut() {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("query_tmp", null);
+		params.put("query", "INSERT INTO db2xes.xesevents SELECT DISTINCT CASE_ID, VISIT_TIME, USER_ID, VISIT_MEAN FROM qyw_7th_event_old_user WHERE TRIGGER_TYPE = \'用户点击\' ORDER BY USER_ID, VISIT_TIME;");
+		params.put("name", "趣医网第七次日志_老用户_除预约业务（成功）外");
+		params.put("filterIn", false);
+		params.put("startEvents", new ArrayList<String>() {
+			{
+				add("C端主页的预约挂号入口");
+				add("获取医生列表");
+			}
+		});
+		params.put("endEvents", new ArrayList<String>() {
+			{
+				add("获取预约挂号结果页面");
+				add("获取预约挂号详情");
+			}
+		});
+		params.put("inKeyEvents", new ArrayList<String>() {
+			{
+				add("成功提交预约（不缴费）");
+				add("成功提交预约（缴费）");
+				add("成功提交挂号");
+				add("预约成功后支付");
+				add("挂号成功后支付");
 			}
 		});
 		params.put("exKeyEvents", new ArrayList<String>() {
