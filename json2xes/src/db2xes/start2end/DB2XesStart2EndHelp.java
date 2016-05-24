@@ -8,7 +8,7 @@ import java.util.List;
 
 public class DB2XesStart2EndHelp {
 	
-	public static void generateXES(String filepath, String descname, String xesname, String eventprefix, List<String> startEvents, List<String> endEvents, List<String> inKeyEvents, List<String> exKeyEvents) {
+	public static void generateXES(String filepath, String descname, String xesname, String eventprefix, List<String> startEvents, List<String> endEvents, List<String> inKeyEvents, List<String> exKeyEvents, boolean filterIn) {
 		String filename = filepath + "/" + descname + ".xes"; // 医院名_daoyi.xes
 																// or
 																// 医院名_regular.xes
@@ -48,6 +48,7 @@ public class DB2XesStart2EndHelp {
 		if (exKeyEvents != null && !exKeyEvents.isEmpty()) {
 			db2xes.addExKeyEvents(exKeyEvents);
 		}
+		db2xes.setFilterIn(filterIn);
 		db2xes.db2xes();
 
 		System.setOut(sysout);

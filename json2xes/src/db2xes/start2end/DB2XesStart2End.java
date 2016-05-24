@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,10 @@ public class DB2XesStart2End extends DB2Xes {
 	private List<String> inKey_events = new ArrayList<String>();
 	
 	private List<String> exKey_events = new ArrayList<String>();
+	
+	private Map<String, List<Map<String, List<Integer>>>> filterInMap = new HashMap<String, List<Map<String, List<Integer>>>>();
+	
+	private boolean filterIn = true;
 
 	public DB2XesStart2End() {
 		super();
@@ -78,6 +83,10 @@ public class DB2XesStart2End extends DB2Xes {
 	
 	public void addExKeyEvents(List<String> e_events) {
 		this.exKey_events.addAll(e_events);
+	}
+	
+	public void setFilterIn(boolean filterIn) {
+		this.filterIn = filterIn;
 	}
 	
 	protected Document generate(Document document, String eventprefix) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
@@ -160,7 +169,8 @@ public class DB2XesStart2End extends DB2Xes {
 			System.out.println("A and no F");
 			IntWrapper cnt = new IntWrapper(0);
 			for (String cid : case_events.keySet()) {
-				Map<String, List<Event>> split_case_events = this.doFilterCaseEvent(cid, case_events.get(cid), true, false, cnt);
+				
+				Map<String, List<Event>> split_case_events = this.doFilterCaseEvent(cid, case_events.get(cid), true, false, cnt, this.filterInMap);
 				if (!split_case_events.isEmpty()) {
 					filter_case_events.putAll(split_case_events);
 				}
@@ -169,7 +179,7 @@ public class DB2XesStart2End extends DB2Xes {
 			System.out.println("A and F");
 			IntWrapper cnt = new IntWrapper(0);
 			for (String cid : case_events.keySet()) {
-				Map<String, List<Event>> split_case_events = this.doFilterCaseEvent(cid, case_events.get(cid), true, true, cnt);
+				Map<String, List<Event>> split_case_events = this.doFilterCaseEvent(cid, case_events.get(cid), true, true, cnt, this.filterInMap);
 				if (!split_case_events.isEmpty()) {
 					filter_case_events.putAll(split_case_events);
 				}
@@ -184,27 +194,91 @@ public class DB2XesStart2End extends DB2Xes {
 		} else if (!this.inKey_events.isEmpty() && this.exKey_events.isEmpty()) {
 			System.out.println("InKey and no ExKey");
 			IntWrapper cnt = new IntWrapper(0);
-			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, true, false);
+			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, true, false, this.filterInMap);
 		} else if (this.inKey_events.isEmpty() && !this.exKey_events.isEmpty()) {
 			System.out.println("no InKey and ExKey");
 			IntWrapper cnt = new IntWrapper(0);
-			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, false, true);
+			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, false, true, this.filterInMap);
 		} else if (!this.inKey_events.isEmpty() && !this.exKey_events.isEmpty()) {
 			System.out.println("InKey and ExKey");
 			IntWrapper cnt = new IntWrapper(0);
-			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, true, true);
+			filter_case_events = this.doFilterKeyCaseEvent(filter_case_events, cnt, true, true, this.filterInMap);
 		}
-		for (String cid : filter_case_events.keySet()) {
-			List<Event> eves = filter_case_events.get(cid);
+		
+		if (this.filterIn) {
+			this.caseEvents = filter_case_events;
+		} else {
+			int total = 0;
+			System.out.println("do filter out");
+			// this.caseEvents = case_events - filter_case_events
+			Map<String, List<Event>> filter_out_case_events = new HashMap<String, List<Event>>();
+			if (case_events != null && !case_events.isEmpty()) {
+				for (String cid : case_events.keySet()) {
+					List<Event> eves = case_events.get(cid);
+					List<Map<String, List<Integer>>> split_case_ids = this.filterInMap.get(cid);
+					if (split_case_ids != null && !split_case_ids.isEmpty()) {
+						int index = 0;
+						List<Integer> sc_infos = new ArrayList<Integer>();
+						for (int i=0; i<split_case_ids.size(); i++) {
+							Map<String, List<Integer>> split_case_info = split_case_ids.get(i);
+							for (String split_case_id : split_case_info.keySet()) {
+								sc_infos.addAll(split_case_info.get(split_case_id));
+							}
+						}
+						Collections.sort(sc_infos);
+						if (sc_infos.isEmpty()) {
+							String split_case_id = cid+'_'+index;
+							filter_out_case_events.put(split_case_id, eves);
+							System.out.println(++total);
+							System.out.println("Case " + split_case_id + ": " + eves.size() + "个event");
+							index ++;
+						} else {
+							int k = 0;
+							for (int i=0; i<sc_infos.size(); i+=2) {
+								int start = sc_infos.get(i);
+								int end = sc_infos.get(i+1);
+								List<Event> split_events = new ArrayList<Event>();
+								for (int j=k; j<start; j++) {
+									split_events.add(eves.get(j));
+								}
+								if (!split_events.isEmpty()) {
+									String split_case_id = cid+'_'+index;
+									filter_out_case_events.put(split_case_id, split_events);
+									System.out.println(++total);
+									System.out.println("Case " + split_case_id + ": " + split_events.size() + "个event");
+									index ++;
+								}
+								k = end + 1;
+							}
+							if (sc_infos.get(sc_infos.size()-1) != eves.size()-1) {
+								List<Event> split_events = new ArrayList<Event>();
+								for (int j=sc_infos.get(sc_infos.size()-1)+1; j<eves.size(); j++) {
+									split_events.add(eves.get(j));
+								}
+								if (!split_events.isEmpty()) {
+									String split_case_id = cid+'_'+index;
+									filter_out_case_events.put(split_case_id, split_events);
+									System.out.println(++total);
+									System.out.println("Case " + split_case_id + ": " + split_events.size() + "个event");
+									index ++;
+								}
+							}
+						}
+					}
+				}
+			}
+			this.caseEvents = filter_out_case_events;
+		}
+		for (String cid : this.caseEvents.keySet()) {
+			List<Event> eves = this.caseEvents.get(cid);
 			if (eves != null) {
 				document = this.addRegEvents(document, eves, cid, eventprefix);
 			}
 		}
-		this.caseEvents = filter_case_events;
 		return document;
 	}
 	
-	private Map<String, List<Event>> doFilterCaseEvent(String case_id, List<Event> case_events, boolean needStart, boolean needEnd, IntWrapper cnt) {
+	private Map<String, List<Event>> doFilterCaseEvent(String case_id, List<Event> case_events, boolean needStart, boolean needEnd, IntWrapper cnt, Map<String, List<Map<String, List<Integer>>>> filterInMapTmp) {
 		Map<String, List<Event>> split_cases = new HashMap<String, List<Event>>();
 		int idx = 0;
 		Stack<Integer> stack = new Stack<Integer>();
@@ -243,6 +317,18 @@ public class DB2XesStart2End extends DB2Xes {
 						}
 						if (!split_events.isEmpty()) {
 							split_cases.put(split_case_id, split_events);
+							List<Map<String, List<Integer>>> split_case_ids = (filterInMapTmp.containsKey(case_id)) ? filterInMapTmp.get(case_id) : new ArrayList<Map<String, List<Integer>>>();
+							split_case_ids.add(new HashMap<String, List<Integer>>() {
+								{
+									put(split_case_id, new ArrayList<Integer>() {
+										{
+											add(start_idx);
+											add(end_idx);
+										}
+									});
+								}
+							});
+							filterInMapTmp.put(case_id, split_case_ids);
 							System.out.println(cnt.incr());
 							System.out.println("Case " + split_case_id + ": " + split_events.size() + "个event");
 							idx ++;
@@ -280,6 +366,18 @@ public class DB2XesStart2End extends DB2Xes {
 						}
 						if (!split_events.isEmpty()) {
 							split_cases.put(split_case_id, split_events);
+							List<Map<String, List<Integer>>> split_case_ids = (filterInMapTmp.containsKey(case_id)) ? filterInMapTmp.get(case_id) : new ArrayList<Map<String, List<Integer>>>();
+							split_case_ids.add(new HashMap<String, List<Integer>>() {
+								{
+									put(split_case_id, new ArrayList<Integer>() {
+										{
+											add(start_idx);
+											add(end_idx);
+										}
+									});
+								}
+							});
+							filterInMapTmp.put(case_id, split_case_ids);
 							System.out.println(cnt.incr());
 							System.out.println("Case " + split_case_id + ": " + split_events.size() + "个event");
 							idx ++;
@@ -292,7 +390,7 @@ public class DB2XesStart2End extends DB2Xes {
 		return split_cases;
 	}
 	
-	private Map<String, List<Event>> doFilterKeyCaseEvent(Map<String, List<Event>> case_events, IntWrapper cnt, boolean needIn, boolean needEx) {
+	private Map<String, List<Event>> doFilterKeyCaseEvent(Map<String, List<Event>> case_events, IntWrapper cnt, boolean needIn, boolean needEx, Map<String, List<Map<String, List<Integer>>>> filterInMapTmp) {
 		Map<String, List<Event>> split_cases = null;
 		if (case_events != null && !case_events.isEmpty()) {
 			split_cases = new HashMap<String, List<Event>>();
@@ -335,6 +433,27 @@ public class DB2XesStart2End extends DB2Xes {
 					System.out.println(cnt.incr());
 					System.out.println("Case " + case_id + ": " + eves.size() + "个event");
 					split_cases.put(case_id, eves);
+				} else {
+					// update filterInMap Info
+					// update filterInMap
+					String cid = case_id.substring(0, case_id.lastIndexOf('_'));
+					if (filterInMapTmp.containsKey(cid)) {
+						List<Map<String, List<Integer>>> split_case_ids = filterInMapTmp.get(cid);
+						if (split_case_ids != null && !split_case_ids.isEmpty()) {
+							int find_idx = -1;
+							for(int i=0; i<split_case_ids.size(); i++) {
+								Map<String, List<Integer>> split_case_info = split_case_ids.get(i);
+								if (split_case_info.containsKey(case_id)) {
+									find_idx = i;
+									break;
+								}
+							}
+							if (find_idx >= 0) {
+								split_case_ids.remove(find_idx);
+								filterInMapTmp.put(cid, split_case_ids);
+							}
+						}
+					}
 				}
 			}
 		}

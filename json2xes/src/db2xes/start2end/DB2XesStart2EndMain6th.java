@@ -36,7 +36,7 @@ public class DB2XesStart2EndMain6th {
 			
 			for (Map<String, Object> params : reqList) {
 				if (params != null && !params.isEmpty()) {
-					DB2XesStart2EndMain6th.genXes(filepath, (String)params.get("query_tmp"), (String)params.get("query"), (String)params.get("name"), (List<String>)params.get("startEvents"), (List<String>)params.get("endEvents"), (List<String>)params.get("inKeyEvents"), (List<String>)params.get("exKeyEvents"));
+					DB2XesStart2EndMain6th.genXes(filepath, (String)params.get("query_tmp"), (String)params.get("query"), (String)params.get("name"), (List<String>)params.get("startEvents"), (List<String>)params.get("endEvents"), (List<String>)params.get("inKeyEvents"), (List<String>)params.get("exKeyEvents"), true);
 				}
 			}
 			
@@ -328,7 +328,7 @@ public class DB2XesStart2EndMain6th {
 	}
 	
 	
-	public static void genXes(String filepath, String sql_tmp, String sql, String name, List<String> startEvents, List<String> endEvents, List<String> inKeyEvents, List<String> exKeyEvents)  throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void genXes(String filepath, String sql_tmp, String sql, String name, List<String> startEvents, List<String> endEvents, List<String> inKeyEvents, List<String> exKeyEvents, boolean filterIn)  throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		String descname = name;
 		String xesname = name;
 		String eventprefix = "qyw";
@@ -349,7 +349,7 @@ public class DB2XesStart2EndMain6th {
 		System.out.println(query + " 运行时间： " + (finishTime - beginTime) / 1000
 				/ 60 + "min, " + (finishTime - beginTime) % (1000 * 60) / 1000
 				+ "s, " + (finishTime - beginTime) % (1000 * 60) % 1000 + "ms");
-		DB2XesStart2EndHelp.generateXES(filepath, descname, xesname, eventprefix, startEvents, endEvents, inKeyEvents, exKeyEvents);
+		DB2XesStart2EndHelp.generateXES(filepath, descname, xesname, eventprefix, startEvents, endEvents, inKeyEvents, exKeyEvents, filterIn);
 		stmt.close();
 		conn.close();
 	}
