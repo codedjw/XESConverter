@@ -55,10 +55,10 @@ public class DB2XesMain {
 		// TODO Auto-generated method stub
 		long startTime=System.currentTimeMillis();   //获取开始时间
 		
-		String filepath = "/Users/dujiawei/Desktop/homework/XES";
+		String filepath = "/Users/dujiawei/Downloads/BPM2016/研究生第一次作业/homework/XES";
 		
 		try {
-			DB2XesMain.genXES_Renji(filepath);
+			DB2XesMain.genXES_Renji2016(filepath);
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
@@ -68,7 +68,45 @@ public class DB2XesMain {
 		System.out.println("Whole 运行时间： "+(endTime-startTime)/1000/60+"min, "+(endTime-startTime)%(1000*60)/1000+"s, "+(endTime-startTime)%(1000*60)%1000+"ms");
 	}
 	
-	public static void genXES_Renji(String filepath)  throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void genXES_Renji2016(String filepath) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		String descname = "";
+		String xesname = "典型案例";
+		String eventprefix = "典型案例";
+		
+		List<String> querys = new ArrayList<String>() {
+			/**
+			 * 初始化query列表
+			 */
+			private static final long serialVersionUID = 1L;
+			{
+				for (int i=1; i<=30; i++) {
+					add("INSERT INTO db2xes.xesevents SELECT T1.GUAHAO_ID AS CASE_ID, T1.ACTIVITY_TIME AS VISIT_TIME, T1.USER_ID AS USER_ID, T1.ACTIVITY AS VISIT_MEAN FROM renji.2016eventlog_"+i+" AS T1 ORDER BY T1.GUAHAO_ID, T1.ACTIVITY_TIME ASC;");
+				}
+			}
+		};
+		
+		for (int i=0; i<querys.size(); i++) {
+			descname = (""+(i+1));
+			xesname = ("典型案例_"+(i+1));
+			// prepare (produce data to db2xes.xesevents)
+			Connection con = DB2Xes.getCon("renji");
+			Statement stmt = con.createStatement();
+			Statement stmt0 = con.createStatement();
+			long beginTime = System.currentTimeMillis(); // 获取开始时间
+			stmt0.executeUpdate("TRUNCATE TABLE db2xes.xesevents");
+			String query = querys.get(i);
+			stmt.executeUpdate(query);
+			long finishTime = System.currentTimeMillis(); // 获取结束时间
+			System.out.println(query + " 运行时间： " + (finishTime - beginTime) / 1000
+					/ 60 + "min, " + (finishTime - beginTime) % (1000 * 60) / 1000
+					+ "s, " + (finishTime - beginTime) % (1000 * 60) % 1000 + "ms");
+
+			// generate
+			DB2XesMain.generateXES(filepath, descname, xesname, eventprefix);
+		}
+	}
+	
+	public static void genXES_Renji2015(String filepath)  throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		String descname = "";
 		String xesname = "典型案例";
 		String eventprefix = "典型案例";
